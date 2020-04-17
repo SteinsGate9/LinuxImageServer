@@ -19,10 +19,14 @@
 #include <errno.h>
 #include <sys/wait.h>
 #include <sys/uio.h>
+
 #include "../lock/locker.h"
 #include "../CGImysql/sql_connection_pool.h"
+#include "../timer/lst_timer.h"
+
 class http_conn
 {
+    friend util_timer;
 public:
     static const int FILENAME_LEN = 200;
     static const int READ_BUFFER_SIZE = 2048;
@@ -68,7 +72,7 @@ public:
     ~http_conn() {}
 
 public:
-    void init(int sockfd, const sockaddr_in &addr);
+    void init(int sockfd, const sockaddr_in &addr, util_timer* timer);
     void close_conn(bool real_close = true);
     void process();
     bool read_once();
@@ -103,6 +107,7 @@ private:
 public:
     static int m_epollfd;
     static int m_user_count;
+    util_timer* timer;
     MYSQL *mysql;
 
 private:

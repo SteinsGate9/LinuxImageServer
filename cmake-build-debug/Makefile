@@ -258,6 +258,33 @@ main.cpp.s:
 	$(MAKE) -f CMakeFiles/LinuxServer.dir/build.make CMakeFiles/LinuxServer.dir/main.cpp.s
 .PHONY : main.cpp.s
 
+timer/lst_timer.o: timer/lst_timer.cpp.o
+
+.PHONY : timer/lst_timer.o
+
+# target to build an object file
+timer/lst_timer.cpp.o:
+	$(MAKE) -f CMakeFiles/LinuxServer.dir/build.make CMakeFiles/LinuxServer.dir/timer/lst_timer.cpp.o
+.PHONY : timer/lst_timer.cpp.o
+
+timer/lst_timer.i: timer/lst_timer.cpp.i
+
+.PHONY : timer/lst_timer.i
+
+# target to preprocess a source file
+timer/lst_timer.cpp.i:
+	$(MAKE) -f CMakeFiles/LinuxServer.dir/build.make CMakeFiles/LinuxServer.dir/timer/lst_timer.cpp.i
+.PHONY : timer/lst_timer.cpp.i
+
+timer/lst_timer.s: timer/lst_timer.cpp.s
+
+.PHONY : timer/lst_timer.s
+
+# target to generate assembly for a file
+timer/lst_timer.cpp.s:
+	$(MAKE) -f CMakeFiles/LinuxServer.dir/build.make CMakeFiles/LinuxServer.dir/timer/lst_timer.cpp.s
+.PHONY : timer/lst_timer.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -282,6 +309,9 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... timer/lst_timer.o"
+	@echo "... timer/lst_timer.i"
+	@echo "... timer/lst_timer.s"
 .PHONY : help
 
 

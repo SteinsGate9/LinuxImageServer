@@ -4,6 +4,7 @@ file(REMOVE_RECURSE
   "CMakeFiles/LinuxServer.dir/lock/locker.cpp.o"
   "CMakeFiles/LinuxServer.dir/log/log.cpp.o"
   "CMakeFiles/LinuxServer.dir/main.cpp.o"
+  "CMakeFiles/LinuxServer.dir/timer/lst_timer.cpp.o"
   "LinuxServer"
   "LinuxServer.pdb"
 )

@@ -60,18 +60,8 @@ void addsig(int sig, void(handler)(int), bool restart = true)
 //定时处理任务，重新定时以不断触发SIGALRM信号
 void timer_handler()
 {
-    timer_lst.tick();
+    timer_lst.timeout();
     alarm(TIMESLOT);
-}
-
-//定时器回调函数，删除非活动连接在socket上的注册事件，并关闭
-void cb_func(client_data *user_data)
-{
-    epoll_ctl(epollfd, EPOLL_CTL_DEL, user_data->sockfd, 0);
-    assert(user_data);
-    close(user_data->sockfd);
-    LOG_INFO("close fd %d", user_data->sockfd);
-    Log::get_instance()->flush();
 }
 
 void show_error(int connfd, const char *info)
@@ -115,12 +105,10 @@ int main(int argc, char *argv[])
 
     //创建线程池
     threadpool<http_conn> *pool = NULL;
-    try
-    {
+    try{
         pool = new threadpool<http_conn>(connPool);
     }
-    catch (...)
-    {
+    catch (...){
         return 1;
     }
 
@@ -141,10 +129,6 @@ int main(int argc, char *argv[])
     //创建套接字，返回listenfd
     int listenfd = socket(PF_INET, SOCK_STREAM, 0);
     assert(listenfd >= 0);
-
-    //struct linger tmp={1,0};
-    //SO_LINGER若有数据待发送，延迟关闭
-    //setsockopt(listenfd,SOL_SOCKET,SO_LINGER,&tmp,sizeof(tmp));
 
     int ret = 0;
     struct sockaddr_in address;
@@ -179,7 +163,7 @@ int main(int argc, char *argv[])
     addsig(SIGTERM, sig_handler, false);
     bool stop_server = false;
 
-    client_data *users_timer = new client_data[MAX_FD];
+    // timeout
     bool timeout = false;
     alarm(TIMESLOT);
 
@@ -214,30 +198,18 @@ int main(int argc, char *argv[])
                     LOG_ERROR("%s", "Internal server busy");
                     continue;
                 }
-                users[connfd].init(connfd, client_address);
-
-                //初始化client_data数据
-                //创建定时器，设置回调函数和超时时间，绑定用户数据，将定时器添加到链表中
-                users_timer[connfd].address = client_address;
-                users_timer[connfd].sockfd = connfd;
-                util_timer *timer = new util_timer;
-                timer->user_data = &users_timer[connfd];
-                timer->cb_func = cb_func;
-                time_t cur = time(NULL);
-                timer->expire = cur + 3 * TIMESLOT;
-                users_timer[connfd].timer = timer;
+                util_timer *timer = new util_timer(connfd, client_address, &users[connfd], time(NULL)+3*TIMESLOT);
                 timer_lst.add_timer(timer);
+
+                users[connfd].init(connfd, client_address, timer);
             }
 
             else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))
             {
                 users[sockfd].close_conn();
 
-                //服务器端关闭连接，移除对应的定时器
-                cb_func(&users_timer[sockfd]);
-                util_timer *timer = users_timer[sockfd].timer;
-                if (timer)
-                {
+                util_timer *timer = users[sockfd].timer;
+                if (timer){
                     timer_lst.del_timer(timer);
                 }
             }
@@ -280,7 +252,7 @@ int main(int argc, char *argv[])
             //处理客户连接上接收到的数据
             else if (events[i].events & EPOLLIN)
             {
-                util_timer *timer = users_timer[sockfd].timer;
+                util_timer *timer = users[sockfd].timer;
                 if (users[sockfd].read_once())
                 {
                     LOG_INFO("deal with the client(%s)", inet_ntoa(users[sockfd].get_address()->sin_addr));
@@ -302,8 +274,6 @@ int main(int argc, char *argv[])
                 else
                 {
                     users[sockfd].close_conn();
-
-                    cb_func(&users_timer[sockfd]);
                     if (timer)
                     {
                         timer_lst.del_timer(timer);
@@ -330,9 +300,7 @@ int main(int argc, char *argv[])
     close(pipefd[1]);
     close(pipefd[0]);
     delete[] users;
-    delete[] users_timer;
     delete pool;
-    //销毁数据库连接池
     delete connPool;
     return 0;
 }

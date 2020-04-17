@@ -11,6 +11,7 @@ CMakeFiles/LinuxServer.dir/http/http_conn.cpp.o: ../http/http_conn.h
 CMakeFiles/LinuxServer.dir/http/http_conn.cpp.o: ../lock/locker.h
 CMakeFiles/LinuxServer.dir/http/http_conn.cpp.o: ../log/block_queue.h
 CMakeFiles/LinuxServer.dir/http/http_conn.cpp.o: ../log/log.h
+CMakeFiles/LinuxServer.dir/http/http_conn.cpp.o: ../timer/lst_timer.h
 
 CMakeFiles/LinuxServer.dir/lock/locker.cpp.o: ../lock/locker.cpp
 CMakeFiles/LinuxServer.dir/lock/locker.cpp.o: ../lock/locker.h
@@ -27,4 +28,12 @@ CMakeFiles/LinuxServer.dir/main.cpp.o: ../log/log.h
 CMakeFiles/LinuxServer.dir/main.cpp.o: ../main.cpp
 CMakeFiles/LinuxServer.dir/main.cpp.o: ../threadpool/threadpool.h
 CMakeFiles/LinuxServer.dir/main.cpp.o: ../timer/lst_timer.h
+
+CMakeFiles/LinuxServer.dir/timer/lst_timer.cpp.o: ../CGImysql/sql_connection_pool.h
+CMakeFiles/LinuxServer.dir/timer/lst_timer.cpp.o: ../http/http_conn.h
+CMakeFiles/LinuxServer.dir/timer/lst_timer.cpp.o: ../lock/locker.h
+CMakeFiles/LinuxServer.dir/timer/lst_timer.cpp.o: ../log/block_queue.h
+CMakeFiles/LinuxServer.dir/timer/lst_timer.cpp.o: ../log/log.h
+CMakeFiles/LinuxServer.dir/timer/lst_timer.cpp.o: ../timer/lst_timer.cpp
+CMakeFiles/LinuxServer.dir/timer/lst_timer.cpp.o: ../timer/lst_timer.h
 

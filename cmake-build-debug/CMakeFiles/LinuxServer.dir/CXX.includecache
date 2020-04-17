@@ -6,26 +6,6 @@
 
 #IncludeRegexTransform: 
 
-/home/huangbenson/Desktop/correct/CGImysql/sql_connection_pool.cpp
-mysql/mysql.h
--
-stdio.h
--
-string
--
-string.h
--
-stdlib.h
--
-list
--
-pthread.h
--
-iostream
--
-sql_connection_pool.h
-/home/huangbenson/Desktop/correct/CGImysql/sql_connection_pool.h
-
 /home/huangbenson/Desktop/correct/CGImysql/sql_connection_pool.h
 stdio.h
 -
@@ -43,18 +23,6 @@ string
 -
 ../lock/locker.h
 /home/huangbenson/Desktop/correct/lock/locker.h
-
-/home/huangbenson/Desktop/correct/http/http_conn.cpp
-http_conn.h
-/home/huangbenson/Desktop/correct/http/http_conn.h
-../log/log.h
-/home/huangbenson/Desktop/correct/log/log.h
-map
--
-mysql/mysql.h
--
-fstream
--
 
 /home/huangbenson/Desktop/correct/http/http_conn.h
 unistd.h
@@ -99,6 +67,8 @@ sys/uio.h
 /home/huangbenson/Desktop/correct/lock/locker.h
 ../CGImysql/sql_connection_pool.h
 /home/huangbenson/Desktop/correct/CGImysql/sql_connection_pool.h
+../timer/lst_timer.h
+/home/huangbenson/Desktop/correct/timer/lst_timer.h
 
 /home/huangbenson/Desktop/correct/lock/locker.h
 exception
@@ -181,6 +151,10 @@ pthread.h
 /home/huangbenson/Desktop/correct/CGImysql/sql_connection_pool.h
 
 /home/huangbenson/Desktop/correct/timer/lst_timer.h
+sys/socket.h
+-
+arpa/inet.h
+-
 time.h
 -
 ../log/log.h

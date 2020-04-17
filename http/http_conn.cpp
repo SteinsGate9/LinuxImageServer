@@ -155,10 +155,11 @@ void http_conn::close_conn(bool real_close)
 }
 
 //初始化连接,外部调用初始化套接字地址
-void http_conn::init(int sockfd, const sockaddr_in &addr)
+void http_conn::init(int sockfd, const sockaddr_in &addr, util_timer* timer)
 {
     m_sockfd = sockfd;
     m_address = addr;
+    timer = timer;
     //int reuse=1;
     //setsockopt(m_sockfd,SOL_SOCKET,SO_REUSEADDR,&reuse,sizeof(reuse));
     addfd(m_epollfd, sockfd, true);

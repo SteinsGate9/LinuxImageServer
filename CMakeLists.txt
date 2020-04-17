@@ -10,8 +10,8 @@ add_executable(${PROJECT_NAME} main.cpp
         http/http_conn.cpp
         log/log.cpp
         lock/locker.cpp
+        timer/lst_timer.cpp
 
-        timer/lst_timer.h
         threadpool/threadpool.h
         log/block_queue.h
         )
