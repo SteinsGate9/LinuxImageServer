@@ -5,7 +5,7 @@ project(LinuxServer)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 # Create the executable
-add_executable(${PROJECT_NAME} main.cpp
+add_executable(${PROJECT_NAME} main2.cpp
         CGImysql/sql_connection_pool.cpp
         http/http_conn.cpp
         log/log.cpp
@@ -18,6 +18,7 @@ add_executable(${PROJECT_NAME} main.cpp
 
 # Including
 target_include_directories(${PROJECT_NAME} PUBLIC
+        .
         threadpool
         log
         CGImysql

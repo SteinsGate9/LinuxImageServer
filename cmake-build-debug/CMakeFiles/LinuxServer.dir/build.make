@@ -57,18 +57,18 @@ include CMakeFiles/LinuxServer.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/LinuxServer.dir/flags.make
 
-CMakeFiles/LinuxServer.dir/main.cpp.o: CMakeFiles/LinuxServer.dir/flags.make
-CMakeFiles/LinuxServer.dir/main.cpp.o: ../main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/huangbenson/Desktop/correct/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/LinuxServer.dir/main.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/LinuxServer.dir/main.cpp.o -c /home/huangbenson/Desktop/correct/main.cpp
+CMakeFiles/LinuxServer.dir/main2.cpp.o: CMakeFiles/LinuxServer.dir/flags.make
+CMakeFiles/LinuxServer.dir/main2.cpp.o: ../main2.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/huangbenson/Desktop/correct/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/LinuxServer.dir/main2.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/LinuxServer.dir/main2.cpp.o -c /home/huangbenson/Desktop/correct/main2.cpp
 
-CMakeFiles/LinuxServer.dir/main.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/LinuxServer.dir/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/huangbenson/Desktop/correct/main.cpp > CMakeFiles/LinuxServer.dir/main.cpp.i
+CMakeFiles/LinuxServer.dir/main2.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/LinuxServer.dir/main2.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/huangbenson/Desktop/correct/main2.cpp > CMakeFiles/LinuxServer.dir/main2.cpp.i
 
-CMakeFiles/LinuxServer.dir/main.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/LinuxServer.dir/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/huangbenson/Desktop/correct/main.cpp -o CMakeFiles/LinuxServer.dir/main.cpp.s
+CMakeFiles/LinuxServer.dir/main2.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/LinuxServer.dir/main2.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/huangbenson/Desktop/correct/main2.cpp -o CMakeFiles/LinuxServer.dir/main2.cpp.s
 
 CMakeFiles/LinuxServer.dir/CGImysql/sql_connection_pool.cpp.o: CMakeFiles/LinuxServer.dir/flags.make
 CMakeFiles/LinuxServer.dir/CGImysql/sql_connection_pool.cpp.o: ../CGImysql/sql_connection_pool.cpp
@@ -137,7 +137,7 @@ CMakeFiles/LinuxServer.dir/timer/lst_timer.cpp.s: cmake_force
 
 # Object files for target LinuxServer
 LinuxServer_OBJECTS = \
-"CMakeFiles/LinuxServer.dir/main.cpp.o" \
+"CMakeFiles/LinuxServer.dir/main2.cpp.o" \
 "CMakeFiles/LinuxServer.dir/CGImysql/sql_connection_pool.cpp.o" \
 "CMakeFiles/LinuxServer.dir/http/http_conn.cpp.o" \
 "CMakeFiles/LinuxServer.dir/log/log.cpp.o" \
@@ -147,7 +147,7 @@ LinuxServer_OBJECTS = \
 # External object files for target LinuxServer
 LinuxServer_EXTERNAL_OBJECTS =
 
-LinuxServer: CMakeFiles/LinuxServer.dir/main.cpp.o
+LinuxServer: CMakeFiles/LinuxServer.dir/main2.cpp.o
 LinuxServer: CMakeFiles/LinuxServer.dir/CGImysql/sql_connection_pool.cpp.o
 LinuxServer: CMakeFiles/LinuxServer.dir/http/http_conn.cpp.o
 LinuxServer: CMakeFiles/LinuxServer.dir/log/log.cpp.o

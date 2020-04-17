@@ -34,6 +34,7 @@
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
+					<Add directory="/home/huangbenson/Desktop/correct/."/>
 					<Add directory="/home/huangbenson/Desktop/correct/threadpool"/>
 					<Add directory="/home/huangbenson/Desktop/correct/log"/>
 					<Add directory="/home/huangbenson/Desktop/correct/CGImysql"/>
@@ -63,6 +64,7 @@
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
+					<Add directory="/home/huangbenson/Desktop/correct/."/>
 					<Add directory="/home/huangbenson/Desktop/correct/threadpool"/>
 					<Add directory="/home/huangbenson/Desktop/correct/log"/>
 					<Add directory="/home/huangbenson/Desktop/correct/CGImysql"/>
@@ -123,7 +125,7 @@
 		<Unit filename="/home/huangbenson/Desktop/correct/log/log.h">
 			<Option target="LinuxServer"/>
 		</Unit>
-		<Unit filename="/home/huangbenson/Desktop/correct/main.cpp">
+		<Unit filename="/home/huangbenson/Desktop/correct/main2.cpp">
 			<Option target="LinuxServer"/>
 		</Unit>
 		<Unit filename="/home/huangbenson/Desktop/correct/threadpool/threadpool.h">

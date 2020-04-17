@@ -6,6 +6,7 @@ CMakeFiles/LinuxServer.dir/CGImysql/sql_connection_pool.cpp.o: ../CGImysql/sql_c
 CMakeFiles/LinuxServer.dir/CGImysql/sql_connection_pool.cpp.o: ../lock/locker.h
 
 CMakeFiles/LinuxServer.dir/http/http_conn.cpp.o: ../CGImysql/sql_connection_pool.h
+CMakeFiles/LinuxServer.dir/http/http_conn.cpp.o: ../define.h
 CMakeFiles/LinuxServer.dir/http/http_conn.cpp.o: ../http/http_conn.cpp
 CMakeFiles/LinuxServer.dir/http/http_conn.cpp.o: ../http/http_conn.h
 CMakeFiles/LinuxServer.dir/http/http_conn.cpp.o: ../lock/locker.h
@@ -20,14 +21,15 @@ CMakeFiles/LinuxServer.dir/log/log.cpp.o: ../log/block_queue.h
 CMakeFiles/LinuxServer.dir/log/log.cpp.o: ../log/log.cpp
 CMakeFiles/LinuxServer.dir/log/log.cpp.o: ../log/log.h
 
-CMakeFiles/LinuxServer.dir/main.cpp.o: ../CGImysql/sql_connection_pool.h
-CMakeFiles/LinuxServer.dir/main.cpp.o: ../http/http_conn.h
-CMakeFiles/LinuxServer.dir/main.cpp.o: ../lock/locker.h
-CMakeFiles/LinuxServer.dir/main.cpp.o: ../log/block_queue.h
-CMakeFiles/LinuxServer.dir/main.cpp.o: ../log/log.h
-CMakeFiles/LinuxServer.dir/main.cpp.o: ../main.cpp
-CMakeFiles/LinuxServer.dir/main.cpp.o: ../threadpool/threadpool.h
-CMakeFiles/LinuxServer.dir/main.cpp.o: ../timer/lst_timer.h
+CMakeFiles/LinuxServer.dir/main2.cpp.o: ../CGImysql/sql_connection_pool.h
+CMakeFiles/LinuxServer.dir/main2.cpp.o: ../define.h
+CMakeFiles/LinuxServer.dir/main2.cpp.o: ../http/http_conn.h
+CMakeFiles/LinuxServer.dir/main2.cpp.o: ../lock/locker.h
+CMakeFiles/LinuxServer.dir/main2.cpp.o: ../log/block_queue.h
+CMakeFiles/LinuxServer.dir/main2.cpp.o: ../log/log.h
+CMakeFiles/LinuxServer.dir/main2.cpp.o: ../main2.cpp
+CMakeFiles/LinuxServer.dir/main2.cpp.o: ../threadpool/threadpool.h
+CMakeFiles/LinuxServer.dir/main2.cpp.o: ../timer/lst_timer.h
 
 CMakeFiles/LinuxServer.dir/timer/lst_timer.cpp.o: ../CGImysql/sql_connection_pool.h
 CMakeFiles/LinuxServer.dir/timer/lst_timer.cpp.o: ../http/http_conn.h

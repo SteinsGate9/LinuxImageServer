@@ -15,28 +15,20 @@
 #include "./http/http_conn.h"
 #include "./log/log.h"
 #include "./CGImysql/sql_connection_pool.h"
+#include "define.h"
 
 #define MAX_FD 30000           //最大文件描述符
 #define MAX_EVENT_NUMBER 10000 //最大事件数
 #define TIMESLOT 5             //最小超时单位
 
-#define SYNSQL          //同步数据库校验
-//#define CGISQLPOOL    //CGI数据库校验
-#define SYNLOG          //同步写日志
-//#define ASYNLOG       //异步写日志
+extern int add_fd(int epollfd, int fd, bool one_shot, bool LT);
+extern int set_nonblocking(int fd);
 
-//这三个函数在http_conn.cpp中定义，改变链接属性
-extern int addfd(int epollfd, int fd, bool one_shot);
-extern int remove(int epollfd, int fd);
-extern int setnonblocking(int fd);
-
-//设置定时器相关参数
 static int pipefd[2];
 static SortedTimerList timer_lst;
-static int epollfd = 0;
 
-//信号处理函数
-void sig_handler(int sig)
+// sig handleer
+static void sig_handler(int sig)
 {
     //为保证函数的可重入性，保留原来的errno
     int save_errno = errno;
@@ -45,8 +37,8 @@ void sig_handler(int sig)
     errno = save_errno;
 }
 
-//设置信号函数
-void addsig(int sig, void(handler)(int), bool restart = true)
+// add sig
+static void add_sig(int sig, void(handler)(int), bool restart = true)
 {
     struct sigaction sa;
     memset(&sa, '\0', sizeof(sa));
@@ -57,34 +49,18 @@ void addsig(int sig, void(handler)(int), bool restart = true)
     assert(sigaction(sig, &sa, NULL) != -1);
 }
 
-//定时处理任务，重新定时以不断触发SIGALRM信号
-void timer_handler()
+// timer
+static void timer_handler()
 {
     timer_lst.timeout();
     alarm(TIMESLOT);
 }
 
-void show_error(int connfd, const char *info)
-{
-    printf("%s", info);
-    send(connfd, info, strlen(info), 0);
-    close(connfd);
-}
-
-//设置信号为LT阻塞模式
-void addfd_(int epollfd, int fd, bool one_shot)
-{
-    epoll_event event;
-    event.data.fd = fd;
-    event.events = EPOLLIN | EPOLLRDHUP;
-    if (one_shot)
-        event.events |= EPOLLONESHOT;
-    epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event);
-}
 
 int main(int argc, char *argv[])
 {
 
+//
 #ifdef ASYNLOG
     Log::get_instance()->init("./mylog.log", 8192, 2000000, 10); //异步日志模型
 #endif
@@ -98,7 +74,7 @@ int main(int argc, char *argv[])
         port = atoi(argv[1]);
 
     //忽略SIGPIPE信号
-    addsig(SIGPIPE, SIG_IGN);
+    add_sig(SIGPIPE, SIG_IGN);
 
     //单例模式创建数据库连接池
     connectionPool *connPool = connectionPool::get_instance("localhost", "root", "123", "yourdb", 3306, 8);
@@ -149,18 +125,18 @@ int main(int argc, char *argv[])
     epoll_event events[MAX_EVENT_NUMBER];
     int epollfd = epoll_create(5);
     assert(epollfd != -1);
-    addfd_(epollfd, listenfd, false);
+    add_fd(epollfd, listenfd, false, true);
     HttpConn::m_epollfd = epollfd;
 
     //创建管道
     ret = socketpair(PF_UNIX, SOCK_STREAM, 0, pipefd);
     assert(ret != -1);
-    setnonblocking(pipefd[1]);
-    addfd(epollfd, pipefd[0], false);
+    set_nonblocking(pipefd[1]);
+    add_fd(epollfd, pipefd[0], false, false);
 
     // add all the interesting signals here
-    addsig(SIGALRM, sig_handler, false);
-    addsig(SIGTERM, sig_handler, false);
+    add_sig(SIGALRM, sig_handler, false);
+    add_sig(SIGTERM, sig_handler, false);
     bool stop_server = false;
 
     // timeout
@@ -194,7 +170,8 @@ int main(int argc, char *argv[])
                 }
                 if (HttpConn::m_user_count >= MAX_FD)
                 {
-                    show_error(connfd, "Internal server busy");
+                    send(connfd, "Internal server busy", strlen("Internal server busy"), 0);
+                    close(connfd);
                     LOG_ERROR("%s", "Internal server busy");
                     continue;
                 }

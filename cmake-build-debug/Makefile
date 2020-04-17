@@ -231,32 +231,32 @@ log/log.cpp.s:
 	$(MAKE) -f CMakeFiles/LinuxServer.dir/build.make CMakeFiles/LinuxServer.dir/log/log.cpp.s
 .PHONY : log/log.cpp.s
 
-main.o: main.cpp.o
+main2.o: main2.cpp.o
 
-.PHONY : main.o
+.PHONY : main2.o
 
 # target to build an object file
-main.cpp.o:
-	$(MAKE) -f CMakeFiles/LinuxServer.dir/build.make CMakeFiles/LinuxServer.dir/main.cpp.o
-.PHONY : main.cpp.o
+main2.cpp.o:
+	$(MAKE) -f CMakeFiles/LinuxServer.dir/build.make CMakeFiles/LinuxServer.dir/main2.cpp.o
+.PHONY : main2.cpp.o
 
-main.i: main.cpp.i
+main2.i: main2.cpp.i
 
-.PHONY : main.i
+.PHONY : main2.i
 
 # target to preprocess a source file
-main.cpp.i:
-	$(MAKE) -f CMakeFiles/LinuxServer.dir/build.make CMakeFiles/LinuxServer.dir/main.cpp.i
-.PHONY : main.cpp.i
+main2.cpp.i:
+	$(MAKE) -f CMakeFiles/LinuxServer.dir/build.make CMakeFiles/LinuxServer.dir/main2.cpp.i
+.PHONY : main2.cpp.i
 
-main.s: main.cpp.s
+main2.s: main2.cpp.s
 
-.PHONY : main.s
+.PHONY : main2.s
 
 # target to generate assembly for a file
-main.cpp.s:
-	$(MAKE) -f CMakeFiles/LinuxServer.dir/build.make CMakeFiles/LinuxServer.dir/main.cpp.s
-.PHONY : main.cpp.s
+main2.cpp.s:
+	$(MAKE) -f CMakeFiles/LinuxServer.dir/build.make CMakeFiles/LinuxServer.dir/main2.cpp.s
+.PHONY : main2.cpp.s
 
 timer/lst_timer.o: timer/lst_timer.cpp.o
 
@@ -306,9 +306,9 @@ help:
 	@echo "... log/log.o"
 	@echo "... log/log.i"
 	@echo "... log/log.s"
-	@echo "... main.o"
-	@echo "... main.i"
-	@echo "... main.s"
+	@echo "... main2.o"
+	@echo "... main2.i"
+	@echo "... main2.s"
 	@echo "... timer/lst_timer.o"
 	@echo "... timer/lst_timer.i"
 	@echo "... timer/lst_timer.s"

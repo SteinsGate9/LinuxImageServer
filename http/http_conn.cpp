@@ -1,17 +1,9 @@
-#include "http_conn.h"
-#include "../log/log.h"
 #include <map>
 #include <mysql/mysql.h>
-#include <fstream>
 
-//同步校验
-#define SYNSQL
-
-//CGI多进程使用链接池
-//#define CGISQLPOOL
-
-//CGI多进程不用连接池
-//#define CGISQL
+#include "http_conn.h"
+#include "../log/log.h"
+#include "../define.h"
 
 //定义http响应的一些状态信息
 const char *ok_200_title = "OK";
@@ -30,8 +22,53 @@ const char *doc_root = "/home/huangbenson/Desktop/correct/root";
 //将表中的用户名和密码放入map
 map<string, string> users;
 
-#ifdef SYNSQL
+//对文件描述符设置非阻塞
+int set_nonblocking(int fd)
+{
+    int old_option = fcntl(fd, F_GETFL);
+    int new_option = old_option | O_NONBLOCK;
+    fcntl(fd, F_SETFL, new_option);
+    return old_option;
+}
 
+//将内核事件表注册读事件，ET模式，选择开启EPOLLONESHOT
+void add_fd(int epollfd, int fd, bool one_shot, bool LT)
+{
+    epoll_event event;
+    event.data.fd = fd;
+    if (LT) {
+        event.events = EPOLLIN | EPOLLRDHUP;
+    }
+    else{
+        event.events = EPOLLIN | EPOLLET | EPOLLRDHUP;
+        set_nonblocking(fd);
+    }
+    if (one_shot)
+        event.events |= EPOLLONESHOT;
+    epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event);
+
+}
+
+//从内核时间表删除描述符
+void remove_fd(int epollfd, int fd)
+{
+    epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, 0);
+    close(fd);
+}
+
+//将事件重置为EPOLLONESHOT
+void mod_fd(int epollfd, int fd, int ev)
+{
+    epoll_event event;
+    event.data.fd = fd;
+    event.events = ev | EPOLLET | EPOLLONESHOT | EPOLLRDHUP;
+    epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &event);
+}
+
+int HttpConn::m_user_count = 0;
+int HttpConn::m_epollfd = -1;
+
+#ifdef SYNSQL
 void HttpConn::initmysql_result(connectionPool *connPool)
 {
     //先从连接池中取一个连接
@@ -63,9 +100,7 @@ void HttpConn::initmysql_result(connectionPool *connPool)
 }
 
 #endif
-
 #ifdef CGISQLPOOL
-
 void HttpConn::initresultFile(connectionPool *connPool)
 {
     ofstream out("./CGImysql/id_passwd.txt");
@@ -99,55 +134,15 @@ void HttpConn::initresultFile(connectionPool *connPool)
     connPool->release_connection(mysql);
     out.close();
 }
-
 #endif
 
-//对文件描述符设置非阻塞
-int setnonblocking(int fd)
-{
-    int old_option = fcntl(fd, F_GETFL);
-    int new_option = old_option | O_NONBLOCK;
-    fcntl(fd, F_SETFL, new_option);
-    return old_option;
-}
-
-//将内核事件表注册读事件，ET模式，选择开启EPOLLONESHOT
-void addfd(int epollfd, int fd, bool one_shot)
-{
-    epoll_event event;
-    event.data.fd = fd;
-    event.events = EPOLLIN | EPOLLET | EPOLLRDHUP;
-    if (one_shot)
-        event.events |= EPOLLONESHOT;
-    epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event);
-    setnonblocking(fd);
-}
-
-//从内核时间表删除描述符
-void removefd(int epollfd, int fd)
-{
-    epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, 0);
-    close(fd);
-}
-
-//将事件重置为EPOLLONESHOT
-void modfd(int epollfd, int fd, int ev)
-{
-    epoll_event event;
-    event.data.fd = fd;
-    event.events = ev | EPOLLET | EPOLLONESHOT | EPOLLRDHUP;
-    epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &event);
-}
-
-int HttpConn::m_user_count = 0;
-int HttpConn::m_epollfd = -1;
 
 //关闭连接，关闭一个连接，客户总量减一
 void HttpConn::close_conn(bool real_close)
 {
     if (real_close && (m_sockfd != -1))
     {
-        removefd(m_epollfd, m_sockfd);
+        remove_fd(m_epollfd, m_sockfd);
         m_sockfd = -1;
         m_user_count--;
     }
@@ -159,7 +154,7 @@ void HttpConn::init(int sockfd, const sockaddr_in &addr, Timer* timer)
     m_sockfd = sockfd;
     m_address = addr;
     timer = timer;
-    addfd(m_epollfd, sockfd, true);
+    add_fd(m_epollfd, sockfd, true, false);
     m_user_count++;
     init();
 }
@@ -709,7 +704,7 @@ bool HttpConn::write()
 
     if (bytes_to_send == 0)
     {
-        modfd(m_epollfd, m_sockfd, EPOLLIN);
+        mod_fd(m_epollfd, m_sockfd, EPOLLIN);
         init();
         return true;
     }
@@ -738,7 +733,7 @@ bool HttpConn::write()
                     m_iv[0].iov_base = m_write_buf + bytes_to_send;
                     m_iv[0].iov_len = m_iv[0].iov_len - bytes_have_send;
                 }
-                modfd(m_epollfd, m_sockfd, EPOLLOUT);
+                mod_fd(m_epollfd, m_sockfd, EPOLLOUT);
                 return true;
             }
             unmap();
@@ -752,12 +747,12 @@ bool HttpConn::write()
             if (m_linger)
             {
                 init();
-                modfd(m_epollfd, m_sockfd, EPOLLIN);
+                mod_fd(m_epollfd, m_sockfd, EPOLLIN);
                 return true;
             }
             else
             {
-                modfd(m_epollfd, m_sockfd, EPOLLIN);
+                mod_fd(m_epollfd, m_sockfd, EPOLLIN);
                 return false;
             }
         }
@@ -875,7 +870,7 @@ void HttpConn::process()
     HTTP_CODE read_ret = process_read();
     if (read_ret == NO_REQUEST)
     {
-        modfd(m_epollfd, m_sockfd, EPOLLIN);
+        mod_fd(m_epollfd, m_sockfd, EPOLLIN);
         return;
     }
     bool write_ret = process_write(read_ret);
@@ -883,5 +878,5 @@ void HttpConn::process()
     {
         close_conn();
     }
-    modfd(m_epollfd, m_sockfd, EPOLLOUT);
+    mod_fd(m_epollfd, m_sockfd, EPOLLOUT);
 }

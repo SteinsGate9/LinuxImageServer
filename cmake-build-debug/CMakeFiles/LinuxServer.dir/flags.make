@@ -6,5 +6,5 @@ CXX_FLAGS =  -std=c++0x -g
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/huangbenson/Desktop/correct/threadpool -I/home/huangbenson/Desktop/correct/log -I/home/huangbenson/Desktop/correct/CGImysql -I/home/huangbenson/Desktop/correct/http -I/home/huangbenson/Desktop/correct/lock -I/home/huangbenson/Desktop/correct/timer 
+CXX_INCLUDES = -I/home/huangbenson/Desktop/correct/. -I/home/huangbenson/Desktop/correct/threadpool -I/home/huangbenson/Desktop/correct/log -I/home/huangbenson/Desktop/correct/CGImysql -I/home/huangbenson/Desktop/correct/http -I/home/huangbenson/Desktop/correct/lock -I/home/huangbenson/Desktop/correct/timer 
 

@@ -24,17 +24,7 @@ string
 ../lock/locker.h
 /home/huangbenson/Desktop/correct/lock/locker.h
 
-/home/huangbenson/Desktop/correct/http/http_conn.cpp
-http_conn.h
-/home/huangbenson/Desktop/correct/http/http_conn.h
-../log/log.h
-/home/huangbenson/Desktop/correct/log/log.h
-map
--
-mysql/mysql.h
--
-fstream
--
+/home/huangbenson/Desktop/correct/define.h
 
 /home/huangbenson/Desktop/correct/http/http_conn.h
 unistd.h
@@ -100,20 +90,6 @@ pthread.h
 sys/time.h
 -
 
-/home/huangbenson/Desktop/correct/log/log.cpp
-string.h
--
-time.h
--
-sys/time.h
--
-stdarg.h
--
-log.h
-/home/huangbenson/Desktop/correct/log/log.h
-pthread.h
--
-
 /home/huangbenson/Desktop/correct/log/log.h
 stdio.h
 -
@@ -128,7 +104,7 @@ pthread.h
 block_queue.h
 /home/huangbenson/Desktop/correct/log/block_queue.h
 
-/home/huangbenson/Desktop/correct/main.cpp
+/home/huangbenson/Desktop/correct/main2.cpp
 sys/socket.h
 -
 netinet/in.h
@@ -149,18 +125,18 @@ cassert
 -
 sys/epoll.h
 -
-./lock/locker.h
-/home/huangbenson/Desktop/correct/lock/locker.h
-./threadpool/threadpool.h
+threadpool/threadpool.h
 /home/huangbenson/Desktop/correct/threadpool/threadpool.h
-./timer/lst_timer.h
-/home/huangbenson/Desktop/correct/timer/lst_timer.h
-./http/http_conn.h
-/home/huangbenson/Desktop/correct/http/http_conn.h
-./log/log.h
-/home/huangbenson/Desktop/correct/log/log.h
-./CGImysql/sql_connection_pool.h
+CGImysql/sql_connection_pool.h
 /home/huangbenson/Desktop/correct/CGImysql/sql_connection_pool.h
+timer/lst_timer.h
+/home/huangbenson/Desktop/correct/timer/lst_timer.h
+http/http_conn.h
+/home/huangbenson/Desktop/correct/http/http_conn.h
+log/block_queue.h
+/home/huangbenson/Desktop/correct/log/block_queue.h
+define.h
+/home/huangbenson/Desktop/correct/define.h
 
 /home/huangbenson/Desktop/correct/threadpool/threadpool.h
 list
@@ -175,14 +151,6 @@ pthread.h
 /home/huangbenson/Desktop/correct/lock/locker.h
 ../CGImysql/sql_connection_pool.h
 /home/huangbenson/Desktop/correct/CGImysql/sql_connection_pool.h
-
-/home/huangbenson/Desktop/correct/timer/lst_timer.cpp
-time.h
--
-lst_timer.h
-/home/huangbenson/Desktop/correct/timer/lst_timer.h
-../http/http_conn.h
-/home/huangbenson/Desktop/correct/http/http_conn.h
 
 /home/huangbenson/Desktop/correct/timer/lst_timer.h
 sys/socket.h
