@@ -194,6 +194,7 @@ int main(int argc, char *argv[])
 
         for (int i = 0; i < number; i++)
         {
+            printf("get\n");
             int sockfd = events[i].data.fd;
 
             //处理新到的客户连接

@@ -9,10 +9,10 @@ add_executable(${PROJECT_NAME} main.cpp
         CGImysql/sql_connection_pool.cpp
         http/http_conn.cpp
         log/log.cpp
+        lock/locker.cpp
 
         timer/lst_timer.h
         threadpool/threadpool.h
-        lock/locker.h
         log/block_queue.h
         )
 

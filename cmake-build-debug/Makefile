@@ -177,6 +177,33 @@ http/http_conn.cpp.s:
 	$(MAKE) -f CMakeFiles/LinuxServer.dir/build.make CMakeFiles/LinuxServer.dir/http/http_conn.cpp.s
 .PHONY : http/http_conn.cpp.s
 
+lock/locker.o: lock/locker.cpp.o
+
+.PHONY : lock/locker.o
+
+# target to build an object file
+lock/locker.cpp.o:
+	$(MAKE) -f CMakeFiles/LinuxServer.dir/build.make CMakeFiles/LinuxServer.dir/lock/locker.cpp.o
+.PHONY : lock/locker.cpp.o
+
+lock/locker.i: lock/locker.cpp.i
+
+.PHONY : lock/locker.i
+
+# target to preprocess a source file
+lock/locker.cpp.i:
+	$(MAKE) -f CMakeFiles/LinuxServer.dir/build.make CMakeFiles/LinuxServer.dir/lock/locker.cpp.i
+.PHONY : lock/locker.cpp.i
+
+lock/locker.s: lock/locker.cpp.s
+
+.PHONY : lock/locker.s
+
+# target to generate assembly for a file
+lock/locker.cpp.s:
+	$(MAKE) -f CMakeFiles/LinuxServer.dir/build.make CMakeFiles/LinuxServer.dir/lock/locker.cpp.s
+.PHONY : lock/locker.cpp.s
+
 log/log.o: log/log.cpp.o
 
 .PHONY : log/log.o
@@ -246,6 +273,9 @@ help:
 	@echo "... http/http_conn.o"
 	@echo "... http/http_conn.i"
 	@echo "... http/http_conn.s"
+	@echo "... lock/locker.o"
+	@echo "... lock/locker.i"
+	@echo "... lock/locker.s"
 	@echo "... log/log.o"
 	@echo "... log/log.i"
 	@echo "... log/log.s"

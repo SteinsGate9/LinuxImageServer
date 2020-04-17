@@ -1,6 +1,7 @@
 file(REMOVE_RECURSE
   "CMakeFiles/LinuxServer.dir/CGImysql/sql_connection_pool.cpp.o"
   "CMakeFiles/LinuxServer.dir/http/http_conn.cpp.o"
+  "CMakeFiles/LinuxServer.dir/lock/locker.cpp.o"
   "CMakeFiles/LinuxServer.dir/log/log.cpp.o"
   "CMakeFiles/LinuxServer.dir/main.cpp.o"
   "LinuxServer"

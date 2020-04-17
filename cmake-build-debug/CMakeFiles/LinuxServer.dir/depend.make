@@ -12,6 +12,9 @@ CMakeFiles/LinuxServer.dir/http/http_conn.cpp.o: ../lock/locker.h
 CMakeFiles/LinuxServer.dir/http/http_conn.cpp.o: ../log/block_queue.h
 CMakeFiles/LinuxServer.dir/http/http_conn.cpp.o: ../log/log.h
 
+CMakeFiles/LinuxServer.dir/lock/locker.cpp.o: ../lock/locker.cpp
+CMakeFiles/LinuxServer.dir/lock/locker.cpp.o: ../lock/locker.h
+
 CMakeFiles/LinuxServer.dir/log/log.cpp.o: ../log/block_queue.h
 CMakeFiles/LinuxServer.dir/log/log.cpp.o: ../log/log.cpp
 CMakeFiles/LinuxServer.dir/log/log.cpp.o: ../log/log.h
