@@ -105,7 +105,7 @@ web端界面
     connectionPool *connPool=connectionPool::get_instance("localhost","root","root","yourdb",3306,5);
     ```
 
-* 修改http_conn.cpp中的root路径
+* 修改HttpConn.cpp中的root路径
 
     ```C++
     const char* doc_root="/home/qgy/TinyWebServer/root";
@@ -141,7 +141,7 @@ web端界面
 		24 //#define CGISQLPOOL  //CGI数据库校验
 	    ```
 
-	* 关闭http_conn.cpp中两种CGI，打开SYNSQL
+	* 关闭HttpConn.cpp中两种CGI，打开SYNSQL
 	    
 	    ```C++
 		7 //同步校验
@@ -162,7 +162,7 @@ web端界面
 		24 //#define CGISQLPOOL  //CGI数据库校验
 	    ```
 
-	* 关闭http_conn.cpp中SYNSQL和CGISQLPOOL，打开CGISQL
+	* 关闭HttpConn.cpp中SYNSQL和CGISQLPOOL，打开CGISQL
 	    
 	    ```C++
 		7 //同步校验
@@ -201,7 +201,7 @@ web端界面
 		24 #define CGISQLPOOL  //CGI数据库校验
 	    ```
 
-	* 关闭http_conn.cpp中SYNSQL和CGISQL，打开CGISQLPOOL
+	* 关闭HttpConn.cpp中SYNSQL和CGISQL，打开CGISQLPOOL
 	    
 	    ```C++
 		7 //同步校验

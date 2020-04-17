@@ -32,7 +32,7 @@ extern int setnonblocking(int fd);
 
 //设置定时器相关参数
 static int pipefd[2];
-static sort_timer_lst timer_lst;
+static SortedTimerList timer_lst;
 static int epollfd = 0;
 
 //信号处理函数
@@ -104,15 +104,15 @@ int main(int argc, char *argv[])
     connectionPool *connPool = connectionPool::get_instance("localhost", "root", "123", "yourdb", 3306, 8);
 
     //创建线程池
-    threadpool<http_conn> *pool = NULL;
+    ProcessThreadPool<HttpConn> *pool = NULL;
     try{
-        pool = new threadpool<http_conn>(connPool);
+        pool = new ProcessThreadPool<HttpConn>(connPool);
     }
     catch (...){
         return 1;
     }
 
-    http_conn *users = new http_conn[MAX_FD];
+    HttpConn *users = new HttpConn[MAX_FD];
     assert(users);
     int user_count = 0;
 
@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
     int epollfd = epoll_create(5);
     assert(epollfd != -1);
     addfd_(epollfd, listenfd, false);
-    http_conn::m_epollfd = epollfd;
+    HttpConn::m_epollfd = epollfd;
 
     //创建管道
     ret = socketpair(PF_UNIX, SOCK_STREAM, 0, pipefd);
@@ -192,13 +192,13 @@ int main(int argc, char *argv[])
                     LOG_ERROR("%s:errno is:%d", "accept error", errno);
                     continue;
                 }
-                if (http_conn::m_user_count >= MAX_FD)
+                if (HttpConn::m_user_count >= MAX_FD)
                 {
                     show_error(connfd, "Internal server busy");
                     LOG_ERROR("%s", "Internal server busy");
                     continue;
                 }
-                util_timer *timer = new util_timer(connfd, client_address, &users[connfd], time(NULL)+3*TIMESLOT);
+                Timer *timer = new Timer(connfd, client_address, &users[connfd], time(NULL)+3*TIMESLOT);
                 timer_lst.add_timer(timer);
 
                 users[connfd].init(connfd, client_address, timer);
@@ -208,7 +208,7 @@ int main(int argc, char *argv[])
             {
                 users[sockfd].close_conn();
 
-                util_timer *timer = users[sockfd].timer;
+                Timer *timer = users[sockfd].timer;
                 if (timer){
                     timer_lst.del_timer(timer);
                 }
@@ -252,7 +252,7 @@ int main(int argc, char *argv[])
             //处理客户连接上接收到的数据
             else if (events[i].events & EPOLLIN)
             {
-                util_timer *timer = users[sockfd].timer;
+                Timer *timer = users[sockfd].timer;
                 if (users[sockfd].read_once())
                 {
                     LOG_INFO("deal with the client(%s)", inet_ntoa(users[sockfd].get_address()->sin_addr));

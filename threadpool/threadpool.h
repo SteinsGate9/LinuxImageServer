@@ -9,12 +9,12 @@
 #include "../CGImysql/sql_connection_pool.h"
 
 template <typename T>
-class threadpool
+class ProcessThreadPool
 {
 public:
     /*thread_number是线程池中线程的数量，max_requests是请求队列中最多允许的、等待处理的请求的数量*/
-    threadpool(connectionPool *connPool, int thread_number = 8, int max_request = 10000);
-    ~threadpool();
+    ProcessThreadPool(connectionPool *connPool, int thread_number = 8, int max_request = 10000);
+    ~ProcessThreadPool();
     bool append(T *request);
 
 private:
@@ -33,7 +33,7 @@ private:
     connectionPool *m_connPool;  //数据库
 };
 template <typename T>
-threadpool<T>::threadpool( connectionPool *connPool, int thread_number, int max_requests) : m_thread_number(thread_number), m_max_requests(max_requests), m_stop(false), m_threads(NULL),m_connPool(connPool)
+ProcessThreadPool<T>::ProcessThreadPool( connectionPool *connPool, int thread_number, int max_requests) : m_thread_number(thread_number), m_max_requests(max_requests), m_stop(false), m_threads(NULL),m_connPool(connPool)
 {
     if (thread_number <= 0 || max_requests <= 0)
         throw std::exception();
@@ -55,13 +55,13 @@ threadpool<T>::threadpool( connectionPool *connPool, int thread_number, int max_
     }
 }
 template <typename T>
-threadpool<T>::~threadpool()
+ProcessThreadPool<T>::~ProcessThreadPool()
 {
     delete[] m_threads;
     m_stop = true;
 }
 template <typename T>
-bool threadpool<T>::append(T *request)
+bool ProcessThreadPool<T>::append(T *request)
 {
     m_queuelocker.lock();
     if (m_workqueue.size() > m_max_requests)
@@ -75,14 +75,14 @@ bool threadpool<T>::append(T *request)
     return true;
 }
 template <typename T>
-void *threadpool<T>::worker(void *arg)
+void *ProcessThreadPool<T>::worker(void *arg)
 {
-    threadpool *pool = (threadpool *)arg;
+    ProcessThreadPool *pool = (ProcessThreadPool *)arg;
     pool->run();
     return pool;
 }
 template <typename T>
-void threadpool<T>::run()
+void ProcessThreadPool<T>::run()
 {
     while (!m_stop)
     {

@@ -24,9 +24,9 @@
 #include "../CGImysql/sql_connection_pool.h"
 #include "../timer/lst_timer.h"
 
-class http_conn
+class HttpConn
 {
-    friend util_timer;
+    friend Timer;
 public:
     static const int FILENAME_LEN = 200;
     static const int READ_BUFFER_SIZE = 2048;
@@ -68,11 +68,11 @@ public:
     };
 
 public:
-    http_conn() {}
-    ~http_conn() {}
+    HttpConn() {}
+    ~HttpConn() {}
 
 public:
-    void init(int sockfd, const sockaddr_in &addr, util_timer* timer);
+    void init(int sockfd, const sockaddr_in &addr, Timer* timer);
     void close_conn(bool real_close = true);
     void process();
     bool read_once();
@@ -107,7 +107,7 @@ private:
 public:
     static int m_epollfd;
     static int m_user_count;
-    util_timer* timer;
+    Timer* timer;
     MYSQL *mysql;
 
 private:

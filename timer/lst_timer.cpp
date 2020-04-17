@@ -5,27 +5,24 @@
 #include "lst_timer.h"
 #include "../http/http_conn.h"
 
-util_timer::util_timer(int sockfd, sockaddr_in address, http_conn* data, time_t expire):
+Timer::Timer(int sockfd, sockaddr_in address, HttpConn* data, time_t expire):
     data(data),expire(expire),prev( NULL ), next( NULL ){}
 
-util_timer::~util_timer(){
+Timer::~Timer(){
 
 }
 
-// set expire time
-void util_timer::set_expire(time_t expire_) {expire = expire_;}
-
 // out of time call HTTP_CONN var to close connections
-void util_timer::cb_func(){
+void Timer::cb_func(){
     epoll_ctl(data->m_epollfd, EPOLL_CTL_DEL, data->m_sockfd, 0);
     close(data->m_sockfd);
     LOG_INFO("closing fd %d", data->m_sockfd);
     Log::get_instance()->flush();
 }
 
-// delete all util_timers
-sort_timer_lst::~sort_timer_lst() {
-    util_timer* tmp = head;
+// delete all Timers
+SortedTimerList::~SortedTimerList() {
+    Timer* tmp = head;
     while(tmp){
         head = tmp->next;
         delete tmp;
@@ -34,7 +31,7 @@ sort_timer_lst::~sort_timer_lst() {
 }
 
 // add to linked list
-void sort_timer_lst::add_timer(util_timer* timer){
+void SortedTimerList::add_timer(Timer* timer){
     if(!timer) return;
     if(!head){ // check head
         head = tail = timer;
@@ -49,10 +46,10 @@ void sort_timer_lst::add_timer(util_timer* timer){
     _add_timer(timer, head);
 }
 
-void sort_timer_lst::adjust_timer( util_timer* timer ){ // adjust timer to correct place
+void SortedTimerList::adjust_timer( Timer* timer ){ // adjust timer to correct place
     if( !timer ) return;
 
-    util_timer* tmp = timer->next;
+    Timer* tmp = timer->next;
     if(!tmp || (timer->expire < tmp->expire)) return; // if tail or no need to adjust
 
     if(timer == head){ // if head
@@ -68,7 +65,7 @@ void sort_timer_lst::adjust_timer( util_timer* timer ){ // adjust timer to corre
     }
 }
 
-void sort_timer_lst::del_timer( util_timer* timer ){
+void SortedTimerList::del_timer( Timer* timer ){
     if(!timer) return;
 
     if((timer == head) && (timer == tail)){ // if size == 1
@@ -93,14 +90,14 @@ void sort_timer_lst::del_timer( util_timer* timer ){
     delete timer;
 }
 
-void sort_timer_lst::timeout(){ // IMPORTANT: time out happens call timeout(), del expired timers
+void SortedTimerList::timeout(){ // IMPORTANT: time out happens call timeout(), del expired timers
     if(!head) return;
 
     LOG_INFO("%s","timer timeout"); // log & flush
     Log::get_instance()->flush();
 
     time_t cur = time(NULL);
-    util_timer* tmp = head;
+    Timer* tmp = head;
     while(tmp){
         if(cur < tmp->expire) break;
         tmp->cb_func();
@@ -111,9 +108,9 @@ void sort_timer_lst::timeout(){ // IMPORTANT: time out happens call timeout(), d
     }
 }
 
-void sort_timer_lst::_add_timer( util_timer* timer, util_timer* lst_head ) { // add timer after head
-    util_timer *prev = lst_head;
-    util_timer *tmp = prev->next;
+void SortedTimerList::_add_timer( Timer* timer, Timer* lst_head ) { // add timer after head
+    Timer *prev = lst_head;
+    Timer *tmp = prev->next;
     while (tmp) {
         if (timer->expire < tmp->expire) {
             prev->next = timer;

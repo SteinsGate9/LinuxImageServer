@@ -56,7 +56,7 @@ private:
     int m_today;        //因为按天分类,记录当前时间是那一天
     FILE *m_fp;         //打开log的文件指针
     char *m_buf;
-    block_queue<string> *m_log_queue; //阻塞队列
+    BlockQueue<string> *m_log_queue; //阻塞队列
     bool m_is_async;                  //是否同步标志位
 };
 
