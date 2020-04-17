@@ -12,19 +12,18 @@
 
 using namespace std;
 
-class connection_pool
+class connectionPool
 {
 public:
-	MYSQL *GetConnection();				 //获取数据库连接
-	bool ReleaseConnection(MYSQL *conn); //释放连接
-	void DestroyPool();					 //销毁所有连接
+	MYSQL *get_connection();				 //获取数据库连接
+	bool release_connection(MYSQL *conn); //释放连接
+	static connectionPool *get_instance(string url, string User, string PassWord, string DataName, int Port, unsigned int MaxConn);
 
-	//单例模式获取一个连接
-	static connection_pool *GetInstance(string url, string User, string PassWord, string DataName, int Port, unsigned int MaxConn);
-	int GetFreeConn();
+	connectionPool();
+	~connectionPool();
 
-	connection_pool();
-	~connection_pool();
+private:
+    void _destroy_pool();					 //销毁所有连接
 
 private:
 	unsigned int MaxConn;  //最大连接数
@@ -33,11 +32,9 @@ private:
 
 private:
 	pthread_mutex_t lock;   //互斥锁
-	list<MYSQL *> connList; //连接池
-	connection_pool *conn;
-	MYSQL *Con;
-	connection_pool(string url, string User, string PassWord, string DataBaseName, int Port, unsigned int MaxConn); //构造方法
-	static connection_pool *connPool;																				//静态实例
+	list<MYSQL *> _conn_list; //连接池
+	connectionPool(string url, string User, string PassWord, string DataBaseName, int Port, unsigned int MaxConn); //构造方法
+	static connectionPool *connPool;																				//静态实例
 																													//sem reserve;
 private:
 	string url;			 //主机地址

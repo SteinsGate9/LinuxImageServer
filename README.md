@@ -102,7 +102,7 @@ web端界面
 
     ```C++
     //root root为服务器数据库的登录名和密码
-    connection_pool *connPool=connection_pool::GetInstance("localhost","root","root","yourdb",3306,5);
+    connectionPool *connPool=connectionPool::get_instance("localhost","root","root","yourdb",3306,5);
     ```
 
 * 修改http_conn.cpp中的root路径
@@ -185,7 +185,7 @@ web端界面
 
 	    ```C++
 	    //root root为服务器数据库的登录名和密码
-	    connection_pool *connPool=connection_pool::GetInstance("localhost","root","root","yourdb",3306,5);
+	    connectionPool *connPool=connectionPool::get_instance("localhost","root","root","yourdb",3306,5);
 	    ```
 	* 生成CGISQL.cgi
 

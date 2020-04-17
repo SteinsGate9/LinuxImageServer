@@ -77,8 +77,8 @@ public:
     {
         return &m_address;
     }
-    void initmysql_result(connection_pool *connPool);
-    void initresultFile(connection_pool *connPool);
+    void initmysql_result(connectionPool *connPool);
+    void initresultFile(connectionPool *connPool);
 
 private:
     void init();

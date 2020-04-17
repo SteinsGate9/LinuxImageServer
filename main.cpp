@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
     addsig(SIGPIPE, SIG_IGN);
 
     //单例模式创建数据库连接池
-    connection_pool *connPool = connection_pool::GetInstance("localhost", "root", "123", "yourdb", 3306, 8);
+    connectionPool *connPool = connectionPool::get_instance("localhost", "root", "123", "yourdb", 3306, 8);
 
     //创建线程池
     threadpool<http_conn> *pool = NULL;
@@ -333,6 +333,6 @@ int main(int argc, char *argv[])
     delete[] users_timer;
     delete pool;
     //销毁数据库连接池
-    connPool->DestroyPool();
+    delete connPool;
     return 0;
 }
