@@ -1,0 +1,117 @@
+2020-04-17 00:38:06.668916 [info]: deal with the client(192.168.88.1)
+2020-04-17 00:38:06.669012 [info]: adjust timer once
+2020-04-17 00:38:06.669052 [info]: GET / HTTP/1.1
+2020-04-17 00:38:06.669091 [info]: Host: 192.168.88.128:1234
+2020-04-17 00:38:06.669097 [info]: Upgrade-Insecure-Requests: 1
+2020-04-17 00:38:06.669101 [info]: oop!unknow header: Upgrade-Insecure-Requests: 1
+2020-04-17 00:38:06.669105 [info]: Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+2020-04-17 00:38:06.669110 [info]: oop!unknow header: Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+2020-04-17 00:38:06.669115 [info]: User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.4 Safari/605.1.15
+2020-04-17 00:38:06.669119 [info]: oop!unknow header: User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.4 Safari/605.1.15
+2020-04-17 00:38:06.669124 [info]: Accept-Language: en-us
+2020-04-17 00:38:06.669128 [info]: oop!unknow header: Accept-Language: en-us
+2020-04-17 00:38:06.669132 [info]: Accept-Encoding: gzip, deflate
+2020-04-17 00:38:06.669136 [info]: oop!unknow header: Accept-Encoding: gzip, deflate
+2020-04-17 00:38:06.669140 [info]: Connection: keep-alive
+2020-04-17 00:38:06.669144 [info]: 
+2020-04-17 00:38:06.672478 [info]: deal with the client(192.168.88.1)
+2020-04-17 00:38:06.672527 [info]: adjust timer once
+2020-04-17 00:38:06.672546 [info]: GET / HTTP/1.1
+2020-04-17 00:38:06.672585 [info]: Host: 192.168.88.128:1234
+2020-04-17 00:38:06.672592 [info]: Upgrade-Insecure-Requests: 1
+2020-04-17 00:38:06.672597 [info]: oop!unknow header: Upgrade-Insecure-Requests: 1
+2020-04-17 00:38:06.672601 [info]: Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+2020-04-17 00:38:06.672606 [info]: oop!unknow header: Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+2020-04-17 00:38:06.672611 [info]: User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.4 Safari/605.1.15
+2020-04-17 00:38:06.672615 [info]: oop!unknow header: User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.4 Safari/605.1.15
+2020-04-17 00:38:06.672622 [info]: Accept-Language: en-us
+2020-04-17 00:38:06.672627 [info]: oop!unknow header: Accept-Language: en-us
+2020-04-17 00:38:06.672632 [info]: Accept-Encoding: gzip, deflate
+2020-04-17 00:38:06.672636 [info]: oop!unknow header: Accept-Encoding: gzip, deflate
+2020-04-17 00:38:06.672640 [info]: Connection: keep-alive
+2020-04-17 00:38:06.672644 [info]: 
+2020-04-17 00:38:06.675733 [info]: deal with the client(192.168.88.1)
+2020-04-17 00:38:06.675772 [info]: adjust timer once
+2020-04-17 00:38:06.675783 [info]: GET / HTTP/1.1
+2020-04-17 00:38:06.675808 [info]: Host: 192.168.88.128:1234
+2020-04-17 00:38:06.675813 [info]: Upgrade-Insecure-Requests: 1
+2020-04-17 00:38:06.675817 [info]: oop!unknow header: Upgrade-Insecure-Requests: 1
+2020-04-17 00:38:06.675821 [info]: Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+2020-04-17 00:38:06.675826 [info]: oop!unknow header: Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+2020-04-17 00:38:06.675830 [info]: User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.4 Safari/605.1.15
+2020-04-17 00:38:06.675835 [info]: oop!unknow header: User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.4 Safari/605.1.15
+2020-04-17 00:38:06.675839 [info]: Accept-Language: en-us
+2020-04-17 00:38:06.675843 [info]: oop!unknow header: Accept-Language: en-us
+2020-04-17 00:38:06.675847 [info]: Accept-Encoding: gzip, deflate
+2020-04-17 00:38:06.675851 [info]: oop!unknow header: Accept-Encoding: gzip, deflate
+2020-04-17 00:38:06.675855 [info]: Connection: keep-alive
+2020-04-17 00:38:06.675859 [info]: 
+2020-04-17 00:38:10.388584 [info]: timer tick
+2020-04-17 00:38:15.389832 [info]: timer tick
+2020-04-17 00:38:20.390752 [info]: timer tick
+2020-04-17 00:40:13.236598 [info]: deal with the client(192.168.88.1)
+2020-04-17 00:40:13.237700 [info]: adjust timer once
+2020-04-17 00:40:13.237761 [info]: GET / HTTP/1.1
+2020-04-17 00:40:13.237815 [info]: Host: 192.168.88.128:1234
+2020-04-17 00:40:13.237825 [info]: Upgrade-Insecure-Requests: 1
+2020-04-17 00:40:13.237832 [info]: oop!unknow header: Upgrade-Insecure-Requests: 1
+2020-04-17 00:40:13.237839 [info]: Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+2020-04-17 00:40:13.237846 [info]: oop!unknow header: Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+2020-04-17 00:40:13.237854 [info]: User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.4 Safari/605.1.15
+2020-04-17 00:40:13.237862 [info]: oop!unknow header: User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.4 Safari/605.1.15
+2020-04-17 00:40:13.237869 [info]: Accept-Language: en-us
+2020-04-17 00:40:13.237875 [info]: oop!unknow header: Accept-Language: en-us
+2020-04-17 00:40:13.237881 [info]: Accept-Encoding: gzip, deflate
+2020-04-17 00:40:13.237887 [info]: oop!unknow header: Accept-Encoding: gzip, deflate
+2020-04-17 00:40:13.237893 [info]: Connection: keep-alive
+2020-04-17 00:40:13.237923 [info]: 
+2020-04-17 00:40:13.237963 [info]: request:HTTP/1.1 200 OK
+
+2020-04-17 00:40:13.237990 [info]: request:HTTP/1.1 200 OK
+Content-Length:586
+
+2020-04-17 00:40:13.237998 [info]: request:HTTP/1.1 200 OK
+Content-Length:586
+Connection:keep-alive
+
+2020-04-17 00:40:13.238004 [info]: request:HTTP/1.1 200 OK
+Content-Length:586
+Connection:keep-alive
+
+
+2020-04-17 00:40:17.647417 [info]: timer tick
+2020-04-17 00:41:24.721880 [info]: deal with the client(192.168.88.1)
+2020-04-17 00:41:24.721960 [info]: adjust timer once
+2020-04-17 00:41:24.722102 [info]: GET / HTTP/1.1
+2020-04-17 00:41:24.722149 [info]: Host: 192.168.88.128:1234
+2020-04-17 00:41:24.722154 [info]: Upgrade-Insecure-Requests: 1
+2020-04-17 00:41:24.722158 [info]: oop!unknow header: Upgrade-Insecure-Requests: 1
+2020-04-17 00:41:24.722162 [info]: Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+2020-04-17 00:41:24.722167 [info]: oop!unknow header: Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+2020-04-17 00:41:24.722172 [info]: User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.4 Safari/605.1.15
+2020-04-17 00:41:24.722176 [info]: oop!unknow header: User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.4 Safari/605.1.15
+2020-04-17 00:41:24.722180 [info]: Accept-Language: en-us
+2020-04-17 00:41:24.722184 [info]: oop!unknow header: Accept-Language: en-us
+2020-04-17 00:41:24.722188 [info]: Accept-Encoding: gzip, deflate
+2020-04-17 00:41:24.722192 [info]: oop!unknow header: Accept-Encoding: gzip, deflate
+2020-04-17 00:41:24.722196 [info]: Connection: keep-alive
+2020-04-17 00:41:24.722199 [info]: 
+2020-04-17 00:41:24.722224 [info]: request:HTTP/1.1 200 OK
+
+2020-04-17 00:41:24.722229 [info]: request:HTTP/1.1 200 OK
+Content-Length:586
+
+2020-04-17 00:41:24.722234 [info]: request:HTTP/1.1 200 OK
+Content-Length:586
+Connection:keep-alive
+
+2020-04-17 00:41:24.722238 [info]: request:HTTP/1.1 200 OK
+Content-Length:586
+Connection:keep-alive
+
+
+2020-04-17 00:41:27.320977 [info]: timer tick
+2020-04-17 00:41:32.321126 [info]: timer tick
+2020-04-17 00:41:37.322993 [info]: timer tick
+2020-04-17 00:41:42.325007 [info]: timer tick
+2020-04-17 00:41:42.326757 [info]: close fd 16
