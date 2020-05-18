@@ -2,8 +2,11 @@
 // Created by GORGEOUS MAN on 2020-04-15.
 //
 #include <time.h>
+
 #include "lst_timer.h"
-#include "../http/http_conn.h"
+#include "http_conn.h"
+#include "log.h"
+
 
 Timer::Timer(int sockfd, sockaddr_in address, HttpConn* data, time_t expire):
     data(data),expire(expire),prev( NULL ), next( NULL ){}

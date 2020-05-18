@@ -13,24 +13,26 @@
 #include <cassert>
 #include <sys/epoll.h>
 
-#include "threadpool/threadpool.h" // connect.h locker.h
-#include "CGImysql/sql_connection_pool.h" // locker.h
-#include "timer/lst_timer.h" // http.h log.h
-#include "http/http_conn.h" // log.h connect.h locker.h
-#include "log/block_queue.h"
+#include "threadpool.h" // connect.h locker.h
+#include "sql_connection_pool.h" // locker.h
+#include "lst_timer.h" // http.h log.h
+#include "http_conn.h" // log.h connect.h locker.h
+#include "block_queue.h"
+#include "log.h"
 #include "define.h"
+#include "logger.h"
+#include "common.h"
 
+/********************************************
+ * defines & extern
+********************************************/
 #define MAX_FD 30000           //最大文件描述符
 #define MAX_EVENT_NUMBER 10000 //最大事件数
 #define TIMESLOT 5             //最小超时单位
 
-extern int add_fd(int epollfd, int fd, bool one_shot, bool LT);
-extern int set_nonblocking(int fd);
-
 static int pipefd[2];
 static SortedTimerList timer_lst;
 
-// sig
 static void sig_handler(int sig){
     int save_errno = errno;
     int msg = sig;
@@ -38,53 +40,45 @@ static void sig_handler(int sig){
     errno = save_errno;
 }
 
-// set sig
-static void addsig(int sig, void(handler)(int), bool restart = true) {
-    struct sigaction sa;
-    memset(&sa, '\0', sizeof(sa));
-    sa.sa_handler = handler;
-    if (restart)
-        sa.sa_flags |= SA_RESTART;
-    sigfillset(&sa.sa_mask);
-    assert(sigaction(sig, &sa, NULL) != -1);
-}
-
-// time handler
-static void timer_handler(){
-    timer_lst.timeout();
-    alarm(TIMESLOT);
-}
-
-
-int main(int argc, char *argv[])
-{
-/*deal with log*/
+int main(int argc, char *argv[]){
+/********************************************
+ * log
+********************************************/
+    char logpath[100];
+    strcpy(logpath, __LOGPATH__);
+    strcpy(logpath, "/mylog.log");
 #ifdef ASYNLOG
-    bool ret = Log::get_instance()->init("./mylog.log", 8192, 2000000, 10); //异步日志模型
+    bool ret = Log::get_instance()->init(logpath, 8192, 2000000, 10); //异步日志模型
 #endif
 #ifdef SYNLOG
-    bool ret0 = Log::get_instance()->init("./mylog.log", 8192, 2000000, 0); //同步日志模型
+    bool ret0 = Log::get_instance()->init(logpath, 8192, 2000000, 0); //同步日志模型
 #endif
     if(!ret0) PRINTERROR("ERROR: creating logging file failed");
 
 
-/*deal with input info*/
+/********************************************
+ * input port
+********************************************/
     int port = 1234;
     if (argc == 2) port = atoi(argv[1]);
 
 
-// todo: ignore SIGPIPE?
+    // todo: ignore SIGPIPE?
     addsig(SIGPIPE, SIG_IGN);
 
 
-/*epoll FDs */
+/********************************************
+ * register epoll
+********************************************/
     //  epoll events
     epoll_event events[MAX_EVENT_NUMBER];
     int epollfd = epoll_create(5);
     if(epollfd == -1) PRINTERROR("ERROR: epoll create failed");
 
 
-/*threadpool ialization*/
+/********************************************
+ * ThreadPool init
+********************************************/
     // singeliton mysql pool
     connectionPool *connPool = connectionPool::get_instance("localhost", "root", "123", "yourdb", 3306, 8);
 
@@ -109,7 +103,9 @@ int main(int argc, char *argv[])
     HttpConn::m_epollfd = epollfd;
 
 
-/*listen socket initialization & add to FD*/
+/********************************************
+ * listen & open
+********************************************/
     // init listen socket
     int listenfd = socket(PF_INET, SOCK_STREAM, 0);
     if(listenfd < 0) PRINTERROR("ERROR: create users HTTP failed");
@@ -198,7 +194,7 @@ int main(int argc, char *argv[])
 
             else if ((sockfd == pipefd[0]) && (events[i].events & EPOLLIN)){ // signal
 
-                int sig;
+//                int sig;
                 char signals[1024];
                 ret = recv(pipefd[0], signals, sizeof(signals), 0); // recv signal
 
@@ -251,7 +247,8 @@ int main(int argc, char *argv[])
 
         }
         if (timeout){
-            timer_handler();
+            timer_lst.timeout();
+            alarm(TIMESLOT);
             timeout = false;
         }
     }

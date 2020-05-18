@@ -1,41 +1,6 @@
-cmake_minimum_required(VERSION 3.4.1)
-project(LinuxServer)
+cmake_minimum_required(VERSION 3.5.1)
 
-# c++11
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+include_directories(src/include)
 
-# Create the executable
-add_executable(${PROJECT_NAME} main2.cpp
-        CGImysql/sql_connection_pool.cpp
-        http/http_conn.cpp
-        log/log.cpp
-        lock/locker.cpp
-        timer/lst_timer.cpp
-
-        threadpool/threadpool.h
-        log/block_queue.h
-        )
-
-# Including
-target_include_directories(${PROJECT_NAME} PUBLIC
-        .
-        threadpool
-        log
-        CGImysql
-        http
-        lock
-        timer
-        )
-
-# Linkng
-target_link_libraries(${PROJECT_NAME} PUBLIC
-        mysqlclient
-        pthread)
-
-
-
-
-
-
-
-
+add_subdirectory(src)
+add_subdirectory(test)

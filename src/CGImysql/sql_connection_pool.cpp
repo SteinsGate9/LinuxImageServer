@@ -6,6 +6,7 @@
 #include <list>
 #include <pthread.h>
 #include <iostream>
+
 #include "sql_connection_pool.h"
 
 using namespace std;
@@ -29,7 +30,7 @@ connectionPool::connectionPool(string url, string User, string PassWord, string 
 	this->DatabaseName = DBName;
 
 	pthread_mutex_lock(&lock);
-	for (int i = 0; i < MaxConn; i++)
+	for (int i = 0; i < (int)MaxConn; i++)
 	{
 		MYSQL *con = NULL;
 		con = mysql_init(con);

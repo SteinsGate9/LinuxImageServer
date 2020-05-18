@@ -4,7 +4,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <time.h>
-#include "../log/log.h"
+
+#include "log.h"
 
 #define BUFFER_SIZE 64
 

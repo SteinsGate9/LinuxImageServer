@@ -2,8 +2,10 @@
 #include <time.h>
 #include <sys/time.h>
 #include <stdarg.h>
-#include "log.h"
 #include <pthread.h>
+
+#include "log.h"
+
 using namespace std;
 
 //默认构造函数，创建互斥锁，初始化是否同步标志位
@@ -42,7 +44,8 @@ bool Log::init(const char *file_name, int log_buf_size, int split_lines, int max
 
     m_log_buf_size = log_buf_size;
     m_buf = new char[m_log_buf_size];
-    memset(m_buf, '\0', sizeof(m_buf));
+
+    memset(m_buf, '\0', m_log_buf_size);
     m_split_lines = split_lines;
 
     time_t t = time(NULL);

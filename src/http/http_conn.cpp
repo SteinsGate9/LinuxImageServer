@@ -2,8 +2,10 @@
 #include <mysql/mysql.h>
 
 #include "http_conn.h"
-#include "../log/log.h"
-#include "../define.h"
+#include "log.h"
+#include "define.h"
+#include "common.h"
+
 
 //定义http响应的一些状态信息
 const char *ok_200_title = "OK";
@@ -17,53 +19,12 @@ const char *error_500_title = "Internal Error";
 const char *error_500_form = "There was an unusual problem serving the request file.\n";
 
 //当浏览器出现连接重置时，可能是网站根目录出错或http响应格式出错或者访问的文件中内容完全为空
-const char *doc_root = "/home/huangbenson/Desktop/correct/root";
+//const char *doc_root = __ROOTPATH__;
 
 //将表中的用户名和密码放入map
 map<string, string> users;
 
-//对文件描述符设置非阻塞
-int set_nonblocking(int fd)
-{
-    int old_option = fcntl(fd, F_GETFL);
-    int new_option = old_option | O_NONBLOCK;
-    fcntl(fd, F_SETFL, new_option);
-    return old_option;
-}
 
-//将内核事件表注册读事件，ET模式，选择开启EPOLLONESHOT
-void add_fd(int epollfd, int fd, bool one_shot, bool LT)
-{
-    epoll_event event;
-    event.data.fd = fd;
-    if (LT) {
-        event.events = EPOLLIN | EPOLLRDHUP;
-    }
-    else{
-        event.events = EPOLLIN | EPOLLET | EPOLLRDHUP;
-        set_nonblocking(fd);
-    }
-    if (one_shot)
-        event.events |= EPOLLONESHOT;
-    epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event);
-
-}
-
-//从内核时间表删除描述符
-void remove_fd(int epollfd, int fd)
-{
-    epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, 0);
-    close(fd);
-}
-
-//将事件重置为EPOLLONESHOT
-void mod_fd(int epollfd, int fd, int ev)
-{
-    epoll_event event;
-    event.data.fd = fd;
-    event.events = ev | EPOLLET | EPOLLONESHOT | EPOLLRDHUP;
-    epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &event);
-}
 
 int HttpConn::m_user_count = 0;
 int HttpConn::m_epollfd = -1;
@@ -83,10 +44,10 @@ void HttpConn::initmysql_result(connectionPool *connPool)
     MYSQL_RES *result = mysql_store_result(mysql);
 
     //返回结果集中的列数
-    int num_fields = mysql_num_fields(result);
+//    int num_fields = mysql_num_fields(result);
 
     //返回所有字段结构的数组
-    MYSQL_FIELD *fields = mysql_fetch_fields(result);
+//    MYSQL_FIELD *fields = mysql_fetch_fields(result);
 
     //从结果集中获取下一行，将对应的用户名和密码，存入map中
     while (MYSQL_ROW row = mysql_fetch_row(result))
@@ -397,8 +358,8 @@ HttpConn::HTTP_CODE HttpConn::process_read()
 
 HttpConn::HTTP_CODE HttpConn::do_request()
 {
-    strcpy(m_real_file, doc_root);
-    int len = strlen(doc_root);
+    strcpy(m_real_file, __ROOTPATH__);
+    int len = strlen(__ROOTPATH__);
     //printf("m_url:%s\n", m_url);
     const char *p = strrchr(m_url, '/');
 
@@ -407,7 +368,7 @@ HttpConn::HTTP_CODE HttpConn::do_request()
     {
 
         //根据标志判断是登录检测还是注册检测
-        char flag = m_url[1];
+//        char flag = m_url[1];
 
         char *m_url_real = (char *)malloc(sizeof(char) * 200);
         strcpy(m_url_real, "/");
@@ -722,7 +683,7 @@ bool HttpConn::write()
         {
             if (errno == EAGAIN)
             {
-                if (bytes_have_send >= m_iv[0].iov_len)
+                if (bytes_have_send >= (int)m_iv[0].iov_len)
                 {
                     m_iv[0].iov_len = 0;
                     m_iv[1].iov_base = m_file_address + newadd;
@@ -785,6 +746,7 @@ bool HttpConn::add_headers(int content_len)
     add_content_length(content_len);
     add_linger();
     add_blank_line();
+    return true;
 }
 bool HttpConn::add_content_length(int content_len)
 {
