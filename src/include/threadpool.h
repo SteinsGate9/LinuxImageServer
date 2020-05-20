@@ -13,7 +13,7 @@ class ProcessThreadPool
 {
 public:
     /*thread_number是线程池中线程的数量，max_requests是请求队列中最多允许的、等待处理的请求的数量*/
-    explicit ProcessThreadPool(connectionPool *connPool, int thread_number = 8, int max_request = 10000);
+    explicit ProcessThreadPool(int thread_number = 8, int max_request = 10000);
     ~ProcessThreadPool();
     bool append(T *request);
 
@@ -33,8 +33,9 @@ private:
     connectionPool *m_connPool;  //数据库
 };
 template <typename T>
-ProcessThreadPool<T>::ProcessThreadPool( connectionPool *connPool, int thread_number, int max_requests)
-: m_thread_number(thread_number), m_max_requests(max_requests),  m_threads(NULL),m_stop(false),m_connPool(connPool)
+ProcessThreadPool<T>::ProcessThreadPool(int thread_number, int max_requests)
+    :m_thread_number(thread_number), m_max_requests(max_requests),  m_threads(NULL),m_stop(false),
+    m_connPool(connectionPool::get_instance("localhost", "root", "123456", "yourdb", 3306, 8))
 {
     if (thread_number <= 0 || max_requests <= 0)
         throw std::exception();
@@ -59,6 +60,7 @@ template <typename T>
 ProcessThreadPool<T>::~ProcessThreadPool()
 {
     delete[] m_threads;
+    delete m_connPool;
     m_stop = true;
 }
 template <typename T>

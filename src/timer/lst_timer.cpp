@@ -3,12 +3,12 @@
 //
 #include <time.h>
 
-#include "lst_timer.h"
 #include "http_conn.h"
-#include "log.h"
+#include "lst_timer.h"
 
 
-Timer::Timer(int sockfd, sockaddr_in address, HttpConn* data, time_t expire):
+
+Timer::Timer(int sockfd, sockaddr_in address, HttpHandler* data, time_t expire):
     data(data),expire(expire),prev( NULL ), next( NULL ){}
 
 Timer::~Timer(){
@@ -17,10 +17,9 @@ Timer::~Timer(){
 
 // out of time call HTTP_CONN var to close connections
 void Timer::cb_func(){
-    epoll_ctl(data->m_epollfd, EPOLL_CTL_DEL, data->m_sockfd, 0);
-    close(data->m_sockfd);
     LOG_INFO("closing fd %d", data->m_sockfd);
     Log::get_instance()->flush();
+    data->close();
 }
 
 // delete all Timers
@@ -94,10 +93,12 @@ void SortedTimerList::del_timer( Timer* timer ){
 }
 
 void SortedTimerList::timeout(){ // IMPORTANT: time out happens call timeout(), del expired timers
-    if(!head) return;
+#ifdef DEBUG_VERBOSE
+    LOG_INFO("%s","timer timeout");
+    CONSOLE_LOG_INFO("%s","timer timeout"); // log & flush
+#endif
 
-    LOG_INFO("%s","timer timeout"); // log & flush
-    Log::get_instance()->flush();
+    if(!head) return;
 
     time_t cur = time(NULL);
     Timer* tmp = head;

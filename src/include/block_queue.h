@@ -151,11 +151,8 @@ public:
     bool pop(T &item)
     {
         pthread_mutex_lock(m_mutex);
-        while (m_size <= 0)
-        {
-            //
-            if (0 != pthread_cond_wait(m_cond, m_mutex))
-            {
+        while (m_size <= 0){
+            if (0 != pthread_cond_wait(m_cond, m_mutex)){ /* error occurred */
                 pthread_mutex_unlock(m_mutex);
                 return false;
             }

@@ -6,18 +6,21 @@
 #include <time.h>
 
 #include "log.h"
+#include "http_conn.h"
+
 
 #define BUFFER_SIZE 64
 
-class HttpConn;
+class HttpHandler;
+
 class Timer{
 public:
-    Timer(int sockfd, sockaddr_in address, HttpConn* data, time_t expire);
+    Timer(int sockfd, sockaddr_in address, HttpHandler* data, time_t expire);
     ~Timer();
     void cb_func();
 
 public:
-    HttpConn* data;
+    HttpHandler* data;
     time_t expire;
     Timer* prev, * next;
 };
@@ -37,6 +40,7 @@ private:
 private:
     Timer* head;
     Timer* tail;
+    std::mutex mutex_;
 };
 
 #endif

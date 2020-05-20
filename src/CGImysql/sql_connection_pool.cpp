@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include "sql_connection_pool.h"
+#include "logger.h"
 
 using namespace std;
 
@@ -35,17 +36,13 @@ connectionPool::connectionPool(string url, string User, string PassWord, string 
 		MYSQL *con = NULL;
 		con = mysql_init(con);
 
-		if (con == NULL)
-		{
-			cout << "Error:" << mysql_error(con);
-			exit(1);
+		if (con == NULL){
+		    CONSOLE_LOG_ERROR("mysql init %s", mysql_error(con));
 		}
 		con = mysql_real_connect(con, url.c_str(), User.c_str(), PassWord.c_str(), DBName.c_str(), Port, NULL, 0);
 
-		if (con == NULL)
-		{
-			cout << "Error: " << mysql_error(con);
-			exit(1);
+		if (con == NULL){
+            CONSOLE_LOG_ERROR("mysql connection %s", mysql_error(con));
 		}
 		_conn_list.push_back(con);
 		++FreeConn;

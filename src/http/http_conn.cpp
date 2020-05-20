@@ -7,7 +7,9 @@
 #include "common.h"
 
 
-//定义http响应的一些状态信息
+/********************************************
+ * global chars
+********************************************/
 const char *ok_200_title = "OK";
 const char *error_400_title = "Bad Request";
 const char *error_400_form = "Your request has bad syntax or is inherently impossible to staisfy.\n";
@@ -18,26 +20,106 @@ const char *error_404_form = "The requested file was not found on this server.\n
 const char *error_500_title = "Internal Error";
 const char *error_500_form = "There was an unusual problem serving the request file.\n";
 
-//当浏览器出现连接重置时，可能是网站根目录出错或http响应格式出错或者访问的文件中内容完全为空
-//const char *doc_root = __ROOTPATH__;
+#ifdef DEBUG
+const char correct[1000] = "GET / HTTP/1.1\r\nUser-Agent: 441UserAgent/1.0.0\r\n\r\n";
+char correct2[1000] = "\0";
+#endif
 
-//将表中的用户名和密码放入map
-map<string, string> users;
+/********************************************
+ * static var
+********************************************/
+int HttpHandler::m_epollfd = -1;
+int HttpHandler::m_user_count = 0;
+map<string, string> HttpHandler::users;
 
 
 
-int HttpConn::m_user_count = 0;
-int HttpConn::m_epollfd = -1;
+/********************************************
+ * public
+********************************************/
+void HttpHandler::init(int sockfd, const sockaddr_in &addr, Timer* timer){
+    /* sockfd */
+    add_fd(m_epollfd, sockfd, true, false);
+    m_sockfd = sockfd;
+
+    /* count */
+    m_user_count++;
+
+    /* other */
+    m_address = addr;
+    m_timer = timer;
+    init_();
+}
+
+void HttpHandler::close(bool real_close){
+    if (real_close) {
+        /* sockfd */
+        remove_fd(m_epollfd, m_sockfd);
+        m_sockfd = -1; /* lazy delete */
+
+        /* count */
+        m_user_count--;
+    }
+}
+
+
+
+#ifdef DEBUG
+void HttpHandler::process() {
+    /* read from connfd */
+    read_();
+
+    /* parse the request */
+    HTTP_STATE ret = parse_();
+
+    /* write to */
+    write_(ret);
+
+
+#ifdef DEBUG_VERBOSE
+//    CONSOLE_LOG_INFO("%ld get: %ld", this_thread::get_id(), strlen(m_read_buf));
+//    CONSOLE_LOG_INFO("get messsage: %s with size %ld", read_buf, strlen(correct));
+//
+//    if (strcasecmp(correct2, m_read_buf) != 0 ) {
+//        strcpy(m_read_buf, "HTTP/1.1 400 Bad Request\r\n");
+//    }
+//    else{
+//    }
+//    send(m_sockfd, m_read_buf, strlen(m_read_buf), 0);
+//
+//    CONSOLE_LOG_INFO("%ld send: %ld", this_thread::get_id(), strlen(m_read_buf));
+#endif
+}
+#endif
+#ifndef DEBUG
+void HttpHandler::process()
+{
+    HTTP_CODE read_ret = process_read();
+    if (read_ret == NO_REQUEST)
+    {
+        mod_fd(m_epollfd, m_sockfd, EPOLLIN);
+        return;
+    }
+    bool write_ret = process_write(read_ret);
+    if (!write_ret)
+    {
+        close();
+    }
+    mod_fd(m_epollfd, m_sockfd, EPOLLOUT);
+}
+#endif
 
 #ifdef SYNSQL
-void HttpConn::initmysql_result(connectionPool *connPool)
-{
+void HttpHandler::initmysql_result(){
     //先从连接池中取一个连接
+    auto connPool = connectionPool::get_instance("localhost", "root", "123456", "yourdb", 3306, 8);
+
     MYSQL *mysql = connPool->get_connection();
 
     //在user表中检索username，passwd数据，浏览器端输入
     if (mysql_query(mysql, "SELECT username,passwd FROM user")){
         LOG_ERROR("SELECT error:%s\n", mysql_error(mysql));
+        CONSOLE_LOG_ERROR("SELECT error:%s\n", mysql_error(mysql));
     }
 
     //从表中检索完整的结果集
@@ -50,8 +132,7 @@ void HttpConn::initmysql_result(connectionPool *connPool)
 //    MYSQL_FIELD *fields = mysql_fetch_fields(result);
 
     //从结果集中获取下一行，将对应的用户名和密码，存入map中
-    while (MYSQL_ROW row = mysql_fetch_row(result))
-    {
+    while (MYSQL_ROW row = mysql_fetch_row(result)) {
         string temp1(row[0]);
         string temp2(row[1]);
         users[temp1] = temp2;
@@ -59,10 +140,9 @@ void HttpConn::initmysql_result(connectionPool *connPool)
     //将连接归还连接池
     connPool->release_connection(mysql);
 }
-
 #endif
 #ifdef CGISQLPOOL
-void HttpConn::initresultFile(connectionPool *connPool)
+void HttpHandler::initresultFile(connectionPool *connPool)
 {
     ofstream out("./CGImysql/id_passwd.txt");
     //先从连接池中取一个连接
@@ -97,38 +177,13 @@ void HttpConn::initresultFile(connectionPool *connPool)
 }
 #endif
 
-
-//关闭连接，关闭一个连接，客户总量减一
-void HttpConn::close_conn(bool real_close)
-{
-    if (real_close && (m_sockfd != -1))
-    {
-        remove_fd(m_epollfd, m_sockfd);
-        m_sockfd = -1;
-        m_user_count--;
-    }
-}
-
-//初始化连接,外部调用初始化套接字地址
-void HttpConn::init(int sockfd, const sockaddr_in &addr, Timer* timer)
-{
-    m_sockfd = sockfd;
-    m_address = addr;
-    timer = timer;
-    add_fd(m_epollfd, sockfd, true, false);
-    m_user_count++;
-    init();
-}
-
-//初始化新接受的连接
-//check_state默认为分析请求行状态
-void HttpConn::init()
+void HttpHandler::init_()
 {
     mysql = NULL;
     bytes_to_send = 0;
     bytes_have_send = 0;
     m_check_state = CHECK_STATE_REQUESTLINE;
-    m_linger = false;
+    m_linger = true;
     m_method = GET;
     m_url = 0;
     m_version = 0;
@@ -138,266 +193,320 @@ void HttpConn::init()
     m_checked_idx = 0;
     m_read_idx = 0;
     m_write_idx = 0;
-    cgi = 0;
+    m_cgi = 0;
     memset(m_read_buf, '\0', READ_BUFFER_SIZE);
     memset(m_write_buf, '\0', WRITE_BUFFER_SIZE);
     memset(m_real_file, '\0', FILENAME_LEN);
 }
 
-//从状态机，用于分析出一行内容
-//返回值为行的读取状态，有LINE_OK,LINE_BAD,LINE_OPEN
-HttpConn::LINE_STATUS HttpConn::parse_line()
-{
-    char temp;
-    for (; m_checked_idx < m_read_idx; ++m_checked_idx)
-    {
-        temp = m_read_buf[m_checked_idx];
-        if (temp == '\r')
-        {
-            if ((m_checked_idx + 1) == m_read_idx)
-                return LINE_OPEN;
-            else if (m_read_buf[m_checked_idx + 1] == '\n')
-            {
-                m_read_buf[m_checked_idx++] = '\0';
-                m_read_buf[m_checked_idx++] = '\0';
-                return LINE_OK;
-            }
-            return LINE_BAD;
-        }
-        else if (temp == '\n')
-        {
-            if (m_checked_idx > 1 && m_read_buf[m_checked_idx - 1] == '\r')
-            {
-                m_read_buf[m_checked_idx - 1] = '\0';
-                m_read_buf[m_checked_idx++] = '\0';
-                return LINE_OK;
-            }
-            return LINE_BAD;
-        }
-    }
-    return LINE_OPEN;
-}
 
-//循环读取客户数据，直到无数据可读或对方关闭连接
-//非阻塞ET工作模式下，需要一次性将数据读完
-bool HttpConn::read_once()
-{
-    if (m_read_idx >= READ_BUFFER_SIZE)
-    {
-        return false;
+/********************************************
+ * parse
+********************************************/
+void HttpHandler::read_() {
+    if (m_read_idx >= READ_BUFFER_SIZE) {
+        LOG_ERROR("read buffer over flow address: %s", inet_ntoa(m_address.sin_addr));
+        close();
+        return;
     }
     int bytes_read = 0;
-    while (true)
-    {
+    int tried_times = 10;
+    while (true) {
         bytes_read = recv(m_sockfd, m_read_buf + m_read_idx, READ_BUFFER_SIZE - m_read_idx, 0);
-        if (bytes_read == -1)
-        {
-            if (errno == EAGAIN || errno == EWOULDBLOCK)
-                break;
-            return false;
+        if (bytes_read == -1) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK){  /* no data available */
+                if (--tried_times == 0)
+                    break;
+            }
+            else {/* other error */
+                LOG_ERROR("read request failed address: %s", inet_ntoa(m_address.sin_addr));
+                close();
+                return;
+            }
         }
-        else if (bytes_read == 0)
-        {
-            return false;
+        else if (bytes_read == 0) { /* already shut down */
+            LOG_ERROR("connection shut down address: %s", inet_ntoa(m_address.sin_addr));
+            close();
+            return;
         }
         m_read_idx += bytes_read;
     }
-    return true;
+    return;
 }
 
-//解析http请求行，获得请求方法，目标url及http版本号
-HttpConn::HTTP_CODE HttpConn::parse_request_line(char *text)
-{
-    m_url = strpbrk(text, " \t");
-    if (!m_url)
-    {
-        return BAD_REQUEST;
+
+HttpHandler::HTTP_STATE HttpHandler::parse_(){
+
+    LINE_STATE line_status;
+    HTTP_STATE ret;
+    char *text = nullptr;
+
+    while ((m_check_state == CHECK_STATE_CONTENT && line_status == LINE_OK) || ((line_status = parse_line_()) == LINE_OK)){
+        text = get_line();
+        m_start_line = m_checked_idx;
+
+        switch (m_check_state) {
+            /* possible outputs =>
+             * 1) parse line failed => ERROR_FORMAT
+             * 2) parse line ok & parse request failed => ERROR_FORMAT
+             * 3) parse link ok & parse request ok => PARSING & CHECK_HEADER */
+            case CHECK_STATE_REQUESTLINE:{
+                ret = parse_request_(text);
+                if (ret == ERROR_FORMAT)
+                    return ERROR_FORMAT;
+                break;
+            }
+            /* possible outputs =>
+             * 1) parse line failed => ERROR_FORMAT
+             * 2) parse line ok & parse request failed => ERROR_FORMAT
+             * 3) parse line ok & parse request ok => looping
+             * 4) parse link ok & parse request finished => do request
+             * 5) parse link ok & parse request finished & still have contents => PARSING & CHECK_CONTENT */
+            case CHECK_STATE_HEADER:{  /* loop n times */
+                ret = parse_headers_(text);
+                if (ret == ERROR_FORMAT)
+                    return ERROR_FORMAT;
+                else if (ret == READY_REQUEST){
+                    return do_request_();
+                }
+                break;
+            }
+            /* possible outputs:
+             * 1) parse line failed => ERROR_FORMAT
+             * 2) parse link ok & content full => do request */
+            case CHECK_STATE_CONTENT:{
+                ret = parse_content_(text);
+                if (ret == ERROR_FORMAT)
+                    return ERROR_FORMAT;
+                if (ret == READY_REQUEST){
+                    return do_request_();
+                }
+                break;
+            }
+            default:
+                return INTERNAL_ERROR;
+        }
+    }
+
+    return ERROR_FORMAT;
+}
+
+HttpHandler::LINE_STATE HttpHandler::parse_line_(){
+    char *str = m_read_buf + m_checked_idx;
+
+    auto slashr = strpbrk(str, "\r");
+    auto slashn = strpbrk(str, "\n");
+
+    auto slashr_ok = slashr && (int)(slashr - str) <= m_read_idx -1;
+    auto slashn_ok = slashn && (int)(slashn - str) <= m_read_idx -1;
+    if (slashn_ok && slashr_ok){
+        int slashn_index = (int) (slashn - str);
+        int slashr_index = (int) (slashr - str);
+        m_checked_idx += slashn_index + 1;
+
+        if (slashr_index == slashn_index-1) {
+            str[slashr_index] = '\0';
+            str[slashn_index] = '\0';
+            return HttpHandler::LINE_OK;
+        }
+        else {
+            return HttpHandler::LINE_BAD;
+        }
+    }
+    else if (slashn_ok){
+        int slashn_index = (int) (slashn - str);
+        m_checked_idx += slashn_index + 1;
+        return HttpHandler::LINE_BAD;
+    }
+    else if (slashr_ok){
+        int slashr_index = (int) (slashr - str);
+        m_checked_idx += slashr_index + 1;
+        return slashr_index==m_read_idx-1?HttpHandler::LINE_OPEN:HttpHandler::LINE_BAD;
+    }
+    else {
+        m_checked_idx = m_read_idx;
+        return HttpHandler::LINE_OPEN;
+    }
+}
+
+HttpHandler::HTTP_STATE HttpHandler::parse_request_(char *text){
+    /* go locate m_url */
+    m_url = strpbrk(text, " ");
+    if (!m_url){
+        return ERROR_FORMAT;
     }
     *m_url++ = '\0';
+    assert(m_url);
+
+    /* get method */
     char *method = text;
     if (strcasecmp(method, "GET") == 0)
         m_method = GET;
-    else if (strcasecmp(method, "POST") == 0)
-    {
+    else if (strcasecmp(method, "POST") == 0){
         m_method = POST;
-        cgi = 1;
+        m_cgi = 1;
+    }
+    else if (strcasecmp(method, "HEAD") == 0){
+        m_method = HEAD;
     }
     else
-        return BAD_REQUEST;
-    m_url += strspn(m_url, " \t");
-    m_version = strpbrk(m_url, " \t");
-    if (!m_version)
-        return BAD_REQUEST;
+        return ERROR_FORMAT;
+
+    /* go locate version */
+    m_version = strpbrk(m_url, " ");
+    if (!m_version) {
+        return ERROR_FORMAT;
+    }
     *m_version++ = '\0';
-    m_version += strspn(m_version, " \t");
-    if (strcasecmp(m_version, "HTTP/1.1") != 0)
-        return BAD_REQUEST;
-    if (strncasecmp(m_url, "http://", 7) == 0)
-    {
+    assert(m_version);
+
+    /* get url */
+    if (strncasecmp(m_url, "http://", 7) == 0){
         m_url += 7;
         m_url = strchr(m_url, '/');
     }
-
-    if (strncasecmp(m_url, "https://", 8) == 0)
-    {
+    else if (strncasecmp(m_url, "https://", 8) == 0){
         m_url += 8;
         m_url = strchr(m_url, '/');
     }
+    if (!m_url || *m_url != '/')
+        return ERROR_FORMAT;
 
-    if (!m_url || m_url[0] != '/')
-        return BAD_REQUEST;
-    //当url为/时，显示判断界面
+    /* get version */
+    if (strcasecmp(m_version, "HTTP/1.1") != 0)
+        return ERROR_FORMAT;
+
+    /* when m_url == "/" */
     if (strlen(m_url) == 1)
         strcat(m_url, "judge.html");
+
+    /* go for next */
     m_check_state = CHECK_STATE_HEADER;
-    return NO_REQUEST;
+    return PARSERING;
 }
 
-//解析http请求的一个头部信息
-HttpConn::HTTP_CODE HttpConn::parse_headers(char *text)
-{
-    if (text[0] == '\0')
-    {
-        if (m_content_length != 0)
-        {
+HttpHandler::HTTP_STATE HttpHandler::parse_headers_(char *text){
+    if (text[0] == '\0'){
+        if (m_content_length != 0){
             m_check_state = CHECK_STATE_CONTENT;
-            return NO_REQUEST;
+            return PARSERING;
         }
-        return GET_REQUEST;
+        return READY_REQUEST;
     }
-    else if (strncasecmp(text, "Connection:", 11) == 0)
-    {
+    else if (strncasecmp(text, "Connection:", 11) == 0){
         text += 11;
         text += strspn(text, " \t");
-        if (strcasecmp(text, "keep-alive") == 0)
-        {
-            m_linger = true;
+        if (strncasecmp(text, "close", 5) == 0){
+            m_linger = false;
         }
     }
-    else if (strncasecmp(text, "Content-length:", 15) == 0)
-    {
+    else if (strncasecmp(text, "Content-length:", 15) == 0){
         text += 15;
         text += strspn(text, " \t");
-        m_content_length = atol(text);
+        m_content_length = strtol(text, nullptr, 10);
+        if (errno == EINVAL){
+            return ERROR_FORMAT;
+        }
     }
-    else if (strncasecmp(text, "Host:", 5) == 0)
-    {
+    else if (strncasecmp(text, "Host:", 5) == 0){
         text += 5;
         text += strspn(text, " \t");
         m_host = text;
     }
-    else
-    {
-        //printf("oop!unknow header: %s\n",text);
+    else if (strncasecmp(text, "User-Agent:", 11) == 0){
+        text += 11;
+        text += strspn(text, " \t");
+        m_useragent = text;
+    }
+    else if (strncasecmp(text, "Origin:", 7) == 0){
+        text += 7;
+        text += strspn(text, " \t");
+        m_origin = text;
+    }
+    else if (strncasecmp(text, "Content-Type:", 13) == 0){
+        text += 13;
+        text += strspn(text, " \t");
+        m_content_type = text;
+    }
+    else if (strncasecmp(text, "Accept-Encoding:", 16) == 0){
+        text += 16;
+        text += strspn(text, " \t");
+        m_encoding = text;
+    }
+    else if (strncasecmp(text, "Upgrade-Insecure-Requests:", 26) == 0){
+        text += 26;
+        text += strspn(text, " \t");
+        m_upgrade = text;
+    }
+    else if (strncasecmp(text, "Accept:", 7) == 0){
+        text += 7;
+        text += strspn(text, " \t");
+        m_accept = text;
+    }
+    else if (strncasecmp(text, "Referer:", 8) == 0){
+        text += 8;
+        text += strspn(text, " \t");
+        m_referer = text;
+    }
+    else if (strncasecmp(text, "Accept_Language:", 16) == 0){
+        text += 16;
+        text += strspn(text, " \t");
+        m_language = text;
+    }
+    else {
         LOG_INFO("oop!unknow header: %s", text);
-        Log::get_instance()->flush();
     }
-    return NO_REQUEST;
+    text = strpbrk(text, " \t");
+    if (text)
+        *text = '\0';
+
+    return PARSERING;
 }
 
-//判断http请求是否被完整读入
-HttpConn::HTTP_CODE HttpConn::parse_content(char *text)
-{
-    if (m_read_idx >= (m_content_length + m_checked_idx))
-    {
+HttpHandler::HTTP_STATE HttpHandler::parse_content_(char *text){ /* request line \0 crlf content crlf ... */
+    if (text - m_read_buf + m_content_length <= m_read_idx){
         text[m_content_length] = '\0';
-        //POST请求中最后为输入的用户名和密码
-        m_string = text;
-        return GET_REQUEST;
+        m_content = text;
+        return READY_REQUEST;
     }
-    return NO_REQUEST;
+    else{
+        return ERROR_FORMAT;
+    }
+
 }
 
-//
-HttpConn::HTTP_CODE HttpConn::process_read()
-{
-    LINE_STATUS line_status = LINE_OK;
-    HTTP_CODE ret = NO_REQUEST;
-    char *text = 0;
-
-    while ((m_check_state == CHECK_STATE_CONTENT && line_status == LINE_OK) || ((line_status = parse_line()) == LINE_OK))
-    {
-        text = get_line();
-        m_start_line = m_checked_idx;
-        LOG_INFO("%s", text);
-        Log::get_instance()->flush();
-        switch (m_check_state)
-        {
-        case CHECK_STATE_REQUESTLINE:
-        {
-            ret = parse_request_line(text);
-            if (ret == BAD_REQUEST)
-                return BAD_REQUEST;
-            break;
-        }
-        case CHECK_STATE_HEADER:
-        {
-            ret = parse_headers(text);
-            if (ret == BAD_REQUEST)
-                return BAD_REQUEST;
-            else if (ret == GET_REQUEST)
-            {
-                return do_request();
-            }
-            break;
-        }
-        case CHECK_STATE_CONTENT:
-        {
-            ret = parse_content(text);
-            if (ret == GET_REQUEST)
-                return do_request();
-            line_status = LINE_OPEN;
-            break;
-        }
-        default:
-            return INTERNAL_ERROR;
-        }
-    }
-    return NO_REQUEST;
-}
-
-HttpConn::HTTP_CODE HttpConn::do_request()
-{
+HttpHandler::HTTP_STATE HttpHandler::do_request_(){
     strcpy(m_real_file, __ROOTPATH__);
     int len = strlen(__ROOTPATH__);
-    //printf("m_url:%s\n", m_url);
     const char *p = strrchr(m_url, '/');
 
-    //处理cgi
-    if (cgi == 1 && (*(p + 1) == '2' || *(p + 1) == '3'))
-    {
-
-        //根据标志判断是登录检测还是注册检测
-//        char flag = m_url[1];
-
+    /* deal with CGI */
+    if (m_cgi == 1 && (*(p + 1) == '2' || *(p + 1) == '3')) {
+        /* get real file name & path */
         char *m_url_real = (char *)malloc(sizeof(char) * 200);
         strcpy(m_url_real, "/");
-        strcat(m_url_real, m_url + 2);
-        strncpy(m_real_file + len, m_url_real, FILENAME_LEN - len - 1);
+        strcat(m_url_real, m_url + 2); /* url */
+        strcat(m_real_file, m_url_real);
         free(m_url_real);
 
-        //将用户名和密码提取出来
-        //user=123&passwd=123
+        /* get id &*/
         char name[100], password[100];
         int i;
-        for (i = 5; m_string[i] != '&'; ++i)
-            name[i - 5] = m_string[i];
+        for (i = 5; m_content[i] != '&'; ++i) /* user=adsda&password=tibrak-1nufXu-cubkid */
+            name[i - 5] = m_content[i];
         name[i - 5] = '\0';
 
-        int j = 0;
-        for (i = i + 10; m_string[i] != '\0'; ++i, ++j)
-            password[j] = m_string[i];
+        int j;
+        for (i = i+10, j = 0; m_content[i] != '\0'; ++i, ++j)
+            password[j] = m_content[i];
         password[j] = '\0';
 
 //同步线程登录校验
 #ifdef SYNSQL
-        pthread_mutex_t lock;
-        pthread_mutex_init(&lock, NULL);
-
-        if (*(p + 1) == '3')
-        {
-            //如果是注册，先检测数据库中是否有重名的
-            //没有重名的，进行增加数据
+        std::mutex mutex_;
+        /* if register */
+        if (*(p + 1) == '3') {
+            /* insert for user name */
             char *sql_insert = (char *)malloc(sizeof(char) * 200);
             strcpy(sql_insert, "INSERT INTO user(username, passwd) VALUES(");
             strcat(sql_insert, "'");
@@ -406,26 +515,23 @@ HttpConn::HTTP_CODE HttpConn::do_request()
             strcat(sql_insert, password);
             strcat(sql_insert, "')");
 
-            if (users.find(name) == users.end())
-            {
-
-                pthread_mutex_lock(&lock);
+            mutex_.lock();
+            /* if not found */
+            if (users.find(name) == users.end()){
                 int res = mysql_query(mysql, sql_insert);
                 users.insert(pair<string, string>(name, password));
-                pthread_mutex_unlock(&lock);
-
                 if (!res)
                     strcpy(m_url, "/log.html");
                 else
                     strcpy(m_url, "/registerError.html");
             }
+            /* if found */
             else
                 strcpy(m_url, "/registerError.html");
+            mutex_.unlock();
         }
-        //如果是登录，直接判断
-        //若浏览器端输入的用户名和密码在表中可以查找到，返回1，否则返回0
-        else if (*(p + 1) == '2')
-        {
+        /* if login */
+        else if (*(p + 1) == '2'){
             if (users.find(name) != users.end() && users[name] == password)
                 strcpy(m_url, "/welcome.html");
             else
@@ -436,7 +542,6 @@ HttpConn::HTTP_CODE HttpConn::do_request()
 
 //CGI用连接池,注册在父进程,登录在子进程
 #ifdef CGISQLPOOL
-
         //注册
         pthread_mutex_t lock;
         pthread_mutex_init(&lock, NULL);
@@ -595,24 +700,21 @@ HttpConn::HTTP_CODE HttpConn::do_request()
 #endif
     }
 
-    if (*(p + 1) == '0')
-    {
+    if (*(p + 1) == '0') { /* POST /0 new user */
         char *m_url_real = (char *)malloc(sizeof(char) * 200);
         strcpy(m_url_real, "/register.html");
         strncpy(m_real_file + len, m_url_real, strlen(m_url_real));
 
         free(m_url_real);
     }
-    else if (*(p + 1) == '1')
-    {
+    else if (*(p + 1) == '1') { /* POST /1 log in */
         char *m_url_real = (char *)malloc(sizeof(char) * 200);
         strcpy(m_url_real, "/log.html");
         strncpy(m_real_file + len, m_url_real, strlen(m_url_real));
 
         free(m_url_real);
     }
-    else if (*(p + 1) == '5')
-    {
+    else if (*(p + 1) == '5') { /* POST /5 get picture */
         char *m_url_real = (char *)malloc(sizeof(char) * 200);
         strcpy(m_url_real, "/picture.html");
         strncpy(m_real_file + len, m_url_real, strlen(m_url_real));
@@ -638,207 +740,196 @@ HttpConn::HTTP_CODE HttpConn::do_request()
     else
         strncpy(m_real_file + len, m_url, FILENAME_LEN - len - 1);
 
-    if (stat(m_real_file, &m_file_stat) < 0)
-        return NO_RESOURCE;
-    if (!(m_file_stat.st_mode & S_IROTH))
-        return FORBIDDEN_REQUEST;
-    if (S_ISDIR(m_file_stat.st_mode))
-        return BAD_REQUEST;
-    int fd = open(m_real_file, O_RDONLY);
-    m_file_address = (char *)mmap(0, m_file_stat.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-    close(fd);
-    return FILE_REQUEST;
-}
-void HttpConn::unmap()
-{
-    if (m_file_address)
-    {
-        munmap(m_file_address, m_file_stat.st_size);
-        m_file_address = 0;
+    if (stat(m_real_file, &m_file_stat) < 0) { /* if no file */
+        return ERROR_FILENOTFOUND;
     }
-}
-bool HttpConn::write()
-{
-    int temp = 0;
-
-    int newadd = 0;
-
-    if (bytes_to_send == 0)
-    {
-        mod_fd(m_epollfd, m_sockfd, EPOLLIN);
-        init();
-        return true;
+    if (!(m_file_stat.st_mode & S_IROTH)) {
+        return ERROR_ACCESSFAILED;
     }
+    if (S_ISDIR(m_file_stat.st_mode)) {
+        return ERROR_FORMAT;
+    }
+    int fd;
+    if ((fd = open(m_real_file, O_RDONLY)) == -1) {
+        return ERROR_ACCESSFAILED;
+    }
+    if ((m_file_address = (char *)mmap(0, m_file_stat.st_size, PROT_READ, MAP_PRIVATE, fd, 0)) == (void *)(-1)){
+        return INTERNAL_ERROR;
+    }
+    if (::close(fd) == -1){
+        return INTERNAL_ERROR;
+    }
+    return FINISHED_REQUEST;
+}
 
-    while (1)
-    {
-        temp = writev(m_sockfd, m_iv, m_iv_count);
 
-        if (temp > 0)
-        {
-            bytes_have_send += temp;
-            newadd = bytes_have_send - m_write_idx;
-        }
-        if (temp <= -1)
-        {
-            if (errno == EAGAIN)
-            {
-                if (bytes_have_send >= (int)m_iv[0].iov_len)
-                {
-                    m_iv[0].iov_len = 0;
-                    m_iv[1].iov_base = m_file_address + newadd;
-                    m_iv[1].iov_len = bytes_to_send;
-                }
-                else
-                {
-                    m_iv[0].iov_base = m_write_buf + bytes_to_send;
-                    m_iv[0].iov_len = m_iv[0].iov_len - bytes_have_send;
-                }
-                mod_fd(m_epollfd, m_sockfd, EPOLLOUT);
-                return true;
-            }
-            unmap();
-            return false;
-        }
-        bytes_to_send -= temp;
-        if (bytes_to_send <= 0)
+/********************************************
+ * write related
+********************************************/
+void HttpHandler::write_(HttpHandler::HTTP_STATE ret){
+    if (!write_to_buffer_(ret)){
+        LOG_ERROR("buffer over flow for address %s", inet_ntoa(m_address.sin_addr));
+        close();
+        return;
+    }
+    write_to_fd_();
+}
 
-        {
-            unmap();
-            if (m_linger)
-            {
-                init();
-                mod_fd(m_epollfd, m_sockfd, EPOLLIN);
-                return true;
-            }
-            else
-            {
-                mod_fd(m_epollfd, m_sockfd, EPOLLIN);
+bool HttpHandler::write_to_buffer_(HttpHandler::HTTP_STATE ret){ /* TODO: possible multithread issue*/
+    switch (ret){
+        case INTERNAL_ERROR:{
+            add_status_(500, error_500_title);
+            add_headers_(strlen(error_500_form));
+            if (!add_content_(error_500_form))
                 return false;
-            }
+            break;
         }
+        case ERROR_FORMAT:{
+            add_status_(400, error_400_title);
+            add_headers_(strlen(error_400_form));
+            if (!add_content_(error_400_form))
+                return false;
+            break;
+        }
+        case ERROR_ACCESSFAILED:{
+            add_status_(403, error_403_title);
+            add_headers_(strlen(error_403_form));
+            if (!add_content_(error_403_form))
+                return false;
+            break;
+        }
+        case ERROR_FILENOTFOUND:{
+            add_status_(403, error_403_title);
+            add_headers_(strlen(error_403_form));
+            if (!add_content_(error_403_form))
+                return false;
+            break;
+        }
+        case FINISHED_REQUEST:{
+            add_status_(200, ok_200_title);
+            if (m_file_stat.st_size != 0){ /* have file to send */
+                add_headers_(m_file_stat.st_size);
+                m_iv[1].iov_base = m_file_address;
+                m_iv[1].iov_len = m_file_stat.st_size;
+                m_iv_count += 1;
+                bytes_to_send = m_file_stat.st_size;
+            }
+            else{
+                const char *ok_string = "<html><body></body></html>";
+                add_headers_(strlen(ok_string));
+                if (!add_content_(ok_string))
+                    return false;
+            }
+            break;
+        }
+        default:
+            return false;
     }
+    m_iv[0].iov_base = m_write_buf;
+    m_iv[0].iov_len = m_write_idx;
+    m_iv_count += 1;
+    bytes_to_send += m_write_idx;
+    return true;
 }
-bool HttpConn::add_response(const char *format, ...)
-{
+
+bool HttpHandler::add_response_(const char *format, ...){
     if (m_write_idx >= WRITE_BUFFER_SIZE)
         return false;
     va_list arg_list;
     va_start(arg_list, format);
     int len = vsnprintf(m_write_buf + m_write_idx, WRITE_BUFFER_SIZE - 1 - m_write_idx, format, arg_list);
-    if (len >= (WRITE_BUFFER_SIZE - 1 - m_write_idx))
-    {
+    if (len >= (WRITE_BUFFER_SIZE - 1 - m_write_idx)){
         va_end(arg_list);
         return false;
     }
     m_write_idx += len;
     va_end(arg_list);
-    LOG_INFO("request:%s", m_write_buf);
-    Log::get_instance()->flush();
     return true;
 }
-bool HttpConn::add_status_line(int status, const char *title)
-{
-    return add_response("%s %d %s\r\n", "HTTP/1.1", status, title);
+
+bool HttpHandler::add_status_(int status, const char *title){
+    return add_response_("%s %d %s\r\n", "HTTP/1.1", status, title);
 }
-bool HttpConn::add_headers(int content_len)
-{
-    add_content_length(content_len);
-    add_linger();
-    add_blank_line();
+
+
+bool HttpHandler::add_headers_(int content_len){
+    add_content_length_(content_len);
+    add_linger_();
+    add_clrf_();
     return true;
 }
-bool HttpConn::add_content_length(int content_len)
+
+bool HttpHandler::add_content_length_(int content_len)
 {
-    return add_response("Content-Length:%d\r\n", content_len);
+    return add_response_("Content-Length:%d\r\n", content_len);
 }
-bool HttpConn::add_content_type()
+bool HttpHandler::add_linger_()
 {
-    return add_response("Content-Type:%s\r\n", "text/html");
+    return add_response_("Connection:%s\r\n", (m_linger) ? "keep-alive" : "close");
 }
-bool HttpConn::add_linger()
+bool HttpHandler::add_clrf_()
 {
-    return add_response("Connection:%s\r\n", (m_linger == true) ? "keep-alive" : "close");
+    return add_response_("%s", "\r\n");
 }
-bool HttpConn::add_blank_line()
+
+bool HttpHandler::add_content_(const char *content)
 {
-    return add_response("%s", "\r\n");
+    return add_response_("%s", content);
 }
-bool HttpConn::add_content(const char *content)
+
+bool HttpHandler::add_content_type_()
 {
-    return add_response("%s", content);
+    return add_response_("Content-Type:%s\r\n", "text/html");
 }
-bool HttpConn::process_write(HTTP_CODE ret)
-{
-    switch (ret)
-    {
-    case INTERNAL_ERROR:
-    {
-        add_status_line(500, error_500_title);
-        add_headers(strlen(error_500_form));
-        if (!add_content(error_500_form))
-            return false;
-        break;
-    }
-    case BAD_REQUEST:
-    {
-        add_status_line(404, error_404_title);
-        add_headers(strlen(error_404_form));
-        if (!add_content(error_404_form))
-            return false;
-        break;
-    }
-    case FORBIDDEN_REQUEST:
-    {
-        add_status_line(403, error_403_title);
-        add_headers(strlen(error_403_form));
-        if (!add_content(error_403_form))
-            return false;
-        break;
-    }
-    case FILE_REQUEST:
-    {
-        add_status_line(200, ok_200_title);
-        if (m_file_stat.st_size != 0)
-        {
-            add_headers(m_file_stat.st_size);
-            m_iv[0].iov_base = m_write_buf;
-            m_iv[0].iov_len = m_write_idx;
-            m_iv[1].iov_base = m_file_address;
-            m_iv[1].iov_len = m_file_stat.st_size;
-            m_iv_count = 2;
-            bytes_to_send = m_write_idx + m_file_stat.st_size;
-            return true;
+
+bool HttpHandler::write_to_fd_(){
+    int temp = 0;
+    int newadd = 0;
+
+    while (true){
+        /* write back */
+        temp = writev(m_sockfd, m_iv, m_iv_count);
+        if (temp > 0){ /* if succeeded*/
+            /* updates */
+            bytes_have_send += temp;
+            newadd = bytes_have_send - m_write_idx;
+            bytes_to_send -= temp;
+
+            /* if finished */
+            if (bytes_to_send <= 0){
+                unmap();
+                if (m_linger){
+                    init_();
+                    LOG_INFO("sent all data:%d and linger", bytes_have_send);
+                    return true;
+                }
+                else {
+                    close();
+                    LOG_INFO("sent all data:%d and closed %s", bytes_have_send, inet_ntoa(m_address.sin_addr));
+                    return false;
+                }
+            }
         }
-        else
-        {
-            const char *ok_string = "<html><body></body></html>";
-            add_headers(strlen(ok_string));
-            if (!add_content(ok_string))
+        if (temp <= -1){ /* if error */
+            if (errno == EAGAIN){ /* non-blocking update info */
+                if (bytes_have_send >= (int)m_iv[0].iov_len){
+                    m_iv[0].iov_len = 0;
+                    m_iv[1].iov_base = m_file_address + newadd;
+                    m_iv[1].iov_len = bytes_to_send;
+                }
+                else{
+                    m_iv[0].iov_base = m_write_buf + bytes_to_send;
+                    m_iv[0].iov_len = m_iv[0].iov_len - bytes_have_send;
+                }
+            }
+            else { /* other error */
+                close();
+                LOG_INFO("error [%s] occurred for address %s", strerror(errno), inet_ntoa(m_address.sin_addr));
                 return false;
+            }
         }
     }
-    default:
-        return false;
-    }
-    m_iv[0].iov_base = m_write_buf;
-    m_iv[0].iov_len = m_write_idx;
-    m_iv_count = 1;
-    bytes_to_send = m_write_idx;
-    return true;
+
+
 }
-void HttpConn::process()
-{
-    HTTP_CODE read_ret = process_read();
-    if (read_ret == NO_REQUEST)
-    {
-        mod_fd(m_epollfd, m_sockfd, EPOLLIN);
-        return;
-    }
-    bool write_ret = process_write(read_ret);
-    if (!write_ret)
-    {
-        close_conn();
-    }
-    mod_fd(m_epollfd, m_sockfd, EPOLLOUT);
-}
+

@@ -24,7 +24,6 @@
 #include <ctime>
 #include <string>
 
-namespace cmudb {
 
 // Note that __VTableFILE__ is a special pre-processor macro that we
 // generate for shorter path names using CMake.
@@ -75,6 +74,13 @@ void outputLogHeader_(const char *file, int line, const char *func, int level);
 #define LOG_ERROR_ENABLED
 //#pragma message("LOG_ERROR was enabled.")
 #define CONSOLE_LOG_ERROR(...)                                                         \
+  outputLogHeader_(__VTableFILE__, __LINE__, __FUNCTION__, LOG_LEVEL_ERROR);   \
+  ::fprintf(LOG_OUTPUT_STREAM, __VA_ARGS__);                                   \
+  fprintf(LOG_OUTPUT_STREAM, "\n");                                            \
+  ::fflush(stdout); \
+  exit(0)
+
+#define CONSOLE_LOG_ERROR_noexit(...)                                                         \
   outputLogHeader_(__VTableFILE__, __LINE__, __FUNCTION__, LOG_LEVEL_ERROR);   \
   ::fprintf(LOG_OUTPUT_STREAM, __VA_ARGS__);                                   \
   fprintf(LOG_OUTPUT_STREAM, "\n");                                            \
@@ -149,6 +155,7 @@ inline void outputLogHeader_(const char *file, int line, const char *func,
                              int level) {
   time_t t = ::time(NULL);
   tm *curTime = localtime(&t);
+  errno = 0;
   char time_str[32]; // FIXME
   ::strftime(time_str, 32, LOG_LOG_TIME_FORMAT, curTime);
   const char *type;
@@ -169,7 +176,5 @@ inline void outputLogHeader_(const char *file, int line, const char *func,
   ::fprintf(LOG_OUTPUT_STREAM, "%s [%s:%d:%s] %s - ", time_str, file, line,
             func, type);
 }
-
-} // namespace cmudb
 
 #endif

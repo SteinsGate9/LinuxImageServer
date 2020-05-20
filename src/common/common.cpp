@@ -8,7 +8,6 @@
 /********************************************
  * sighandlers
 ********************************************/
-// set sig
 void addsig(int sig, void(handler)(int), bool restart) {
     struct sigaction sa;
     memset(&sa, '\0', sizeof(sa));
@@ -23,7 +22,6 @@ void addsig(int sig, void(handler)(int), bool restart) {
 /********************************************
  * file systems
 ********************************************/
-//对文件描述符设置非阻塞
 int set_nonblocking(int fd)
 {
     int old_option = fcntl(fd, F_GETFL);
@@ -32,7 +30,37 @@ int set_nonblocking(int fd)
     return old_option;
 }
 
-//将内核事件表注册读事件，ET模式，选择开启EPOLLONESHOT
+void set_fl(int fd, int flags)
+{
+    int val;
+
+    if ((val = fcntl(fd, F_GETFL, 0)) < 0){
+        CONSOLE_LOG_ERROR("fcntl F_GETFL error with errno %d", errno);
+    }
+
+    val |= flags;		/* turn on flags */
+
+    if (fcntl(fd, F_SETFL, val) < 0) {
+        CONSOLE_LOG_ERROR("fcntl F_SETFL error with errno %d", errno);
+    }
+}
+
+void clr_fl(int fd, int flags)
+
+{
+    int val;
+
+    if ((val = fcntl(fd, F_GETFL, 0)) < 0) {
+        CONSOLE_LOG_ERROR("fcntl F_GETFL error with errno %d", errno);
+    }
+
+    val &= ~flags;		/* turn flags off */
+
+    if (fcntl(fd, F_SETFL, val) < 0) {
+        CONSOLE_LOG_ERROR("fcntl F_SETFL error with errno %d", errno);
+    }
+}
+
 void add_fd(int epollfd, int fd, bool one_shot, bool LT)
 {
     epoll_event event;
@@ -42,22 +70,25 @@ void add_fd(int epollfd, int fd, bool one_shot, bool LT)
     }
     else{
         event.events = EPOLLIN | EPOLLET | EPOLLRDHUP;
-        set_nonblocking(fd);
+        set_fl(fd, O_NONBLOCK);
     }
     if (one_shot)
         event.events |= EPOLLONESHOT;
-    epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event);
-
+    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event) < 0){
+        CONSOLE_LOG_ERROR("epoll_ctl error: %s", strerror(errno));
+    }
 }
 
-//从内核时间表删除描述符
+
 void remove_fd(int epollfd, int fd)
 {
-    epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, 0);
+    if (epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, 0) < 0){
+        CONSOLE_LOG_ERROR("epoll_ctl error: %s", strerror(errno));
+    }
     close(fd);
 }
 
-//将事件重置为EPOLLONESHOT
+
 void mod_fd(int epollfd, int fd, int ev)
 {
     epoll_event event;
@@ -65,3 +96,14 @@ void mod_fd(int epollfd, int fd, int ev)
     event.events = ev | EPOLLET | EPOLLONESHOT | EPOLLRDHUP;
     epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &event);
 }
+
+
+/********************************************
+ * mem
+********************************************/
+//void unmap(char* file_address, ){
+//    if (file_address){
+//        munmap(file_address, m_file_stat.st_size);
+//        file_address = 0;
+//    }
+//}

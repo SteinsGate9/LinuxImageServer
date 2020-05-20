@@ -43,8 +43,8 @@ project(project1)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -lstdc++")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Werror")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__VTableFILE__='\"$(subst ${CMAKE_SOURCE_DIR}/,,$(abspath $<))\"'")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__LOGPATH__='\"${CMAKE_SOURCE_DIR}/log/\"'")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__ROOTPATH__='\"${CMAKE_SOURCE_DIR}/root/\"'")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__LOGFILE__='\"${CMAKE_SOURCE_DIR}/log/mylog.log\"'")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__ROOTPATH__='\"${CMAKE_SOURCE_DIR}/root\"'")
 
 add_definitions(-DDEBUG_VERBOSE)  # debug
 

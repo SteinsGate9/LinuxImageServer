@@ -4,6 +4,12 @@ set (CMAKE_CXX_STANDARD 11)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__VTableFILE__='\"$(subst ${CMAKE_SOURCE_DIR}/,,$(abspath $<))\"'")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__VTableFILE__='\"$(subst ${CMAKE_SOURCE_DIR}/,,$(abspath $<))\"'")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__ROOTPATH__='\"${CMAKE_SOURCE_DIR}/root/\"'")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__LOGPATH__='\"${CMAKE_SOURCE_DIR}/log/\"'")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__LOGFILE__='\"${CMAKE_SOURCE_DIR}/log/mylog.log\"'")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDEBUG")
+#add_definitions(-DDEBUG_VERBOSE)
+
 
 
 ############ Files  ##############################################################################
@@ -53,11 +59,17 @@ foreach(test_src ${test_srcs} )
     # create executable
     add_executable(${test_name}
             ${test_src}
-            ${CMAKE_SOURCE_DIR}/src/log/log.cpp
+            ${CMAKE_SOURCE_DIR}/src/common/common.cpp
+            ${CMAKE_SOURCE_DIR}/src/io/io.cpp
 
-#            ${CMAKE_SOURCE_DIR}/src/parser/parse.c
-#            ${CMAKE_SOURCE_DIR}/src/parser/
-#            ${CMAKE_SOURCE_DIR}/src/client_pool/client_pool.cpp
+            ${CMAKE_SOURCE_DIR}/src/log/log.cpp
+            ${CMAKE_SOURCE_DIR}/src/CGImysql/sql_connection_pool.cpp
+            ${CMAKE_SOURCE_DIR}/src/lock/locker.cpp
+            ${CMAKE_SOURCE_DIR}/src/timer/lst_timer.cpp
+            ${CMAKE_SOURCE_DIR}/src/signal/connector.cpp
+
+            ${CMAKE_SOURCE_DIR}/src/client_pool/client_pool.cpp
+            ${CMAKE_SOURCE_DIR}/src/http/http_conn.cpp
 
             )
 
@@ -65,11 +77,14 @@ foreach(test_src ${test_srcs} )
     target_include_directories(${test_name} PUBLIC
             ${LOCAL_INCLUDE_DIRS}
             ${OPENSSL_INCLUDE_DIRS}
+#            ${MYSQL_INCLUDE_DIRS}
             )
 
     # link libraries
     target_link_libraries(${test_name}
             ${openssl_libsrcs}
+            mysqlclient
+            pthread
             gtest
             )
 
