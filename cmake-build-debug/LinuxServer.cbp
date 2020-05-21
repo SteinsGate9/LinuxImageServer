@@ -8,136 +8,132 @@
 		<Option virtualFolders="CMake Files\;"/>
 		<Build>
 			<Target title="all">
-				<Option working_dir="/home/huangbenson/Desktop/correct/cmake-build-debug"/>
+				<Option working_dir="/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="/usr/bin/make -f &quot;/home/huangbenson/Desktop/correct/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
-					<CompileFile command="/usr/bin/make -f &quot;/home/huangbenson/Desktop/correct/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -f &quot;/home/huangbenson/Desktop/correct/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -f &quot;/home/huangbenson/Desktop/correct/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="rebuild_cache">
-				<Option working_dir="/home/huangbenson/Desktop/correct/cmake-build-debug"/>
+				<Option working_dir="/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="/usr/bin/make -f &quot;/home/huangbenson/Desktop/correct/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
-					<CompileFile command="/usr/bin/make -f &quot;/home/huangbenson/Desktop/correct/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -f &quot;/home/huangbenson/Desktop/correct/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -f &quot;/home/huangbenson/Desktop/correct/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-				</MakeCommands>
-			</Target>
-			<Target title="LinuxServer">
-				<Option output="/home/huangbenson/Desktop/correct/cmake-build-debug/LinuxServer" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="/home/huangbenson/Desktop/correct/cmake-build-debug"/>
-				<Option object_output="./"/>
-				<Option type="1"/>
-				<Option compiler="gcc"/>
-				<Compiler>
-					<Add directory="/home/huangbenson/Desktop/correct/."/>
-					<Add directory="/home/huangbenson/Desktop/correct/threadpool"/>
-					<Add directory="/home/huangbenson/Desktop/correct/log"/>
-					<Add directory="/home/huangbenson/Desktop/correct/CGImysql"/>
-					<Add directory="/home/huangbenson/Desktop/correct/http"/>
-					<Add directory="/home/huangbenson/Desktop/correct/lock"/>
-					<Add directory="/home/huangbenson/Desktop/correct/timer"/>
-					<Add directory="/usr/include/c++/5"/>
-					<Add directory="/usr/include/x86_64-linux-gnu/c++/5"/>
-					<Add directory="/usr/include/c++/5/backward"/>
-					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include"/>
-					<Add directory="/usr/local/include"/>
-					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed"/>
-					<Add directory="/usr/include/x86_64-linux-gnu"/>
-					<Add directory="/usr/include"/>
-				</Compiler>
-				<MakeCommands>
-					<Build command="/usr/bin/make -f &quot;/home/huangbenson/Desktop/correct/cmake-build-debug/Makefile&quot;  VERBOSE=1 LinuxServer"/>
-					<CompileFile command="/usr/bin/make -f &quot;/home/huangbenson/Desktop/correct/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -f &quot;/home/huangbenson/Desktop/correct/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -f &quot;/home/huangbenson/Desktop/correct/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-				</MakeCommands>
-			</Target>
-			<Target title="LinuxServer/fast">
-				<Option output="/home/huangbenson/Desktop/correct/cmake-build-debug/LinuxServer" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="/home/huangbenson/Desktop/correct/cmake-build-debug"/>
-				<Option object_output="./"/>
-				<Option type="1"/>
-				<Option compiler="gcc"/>
-				<Compiler>
-					<Add directory="/home/huangbenson/Desktop/correct/."/>
-					<Add directory="/home/huangbenson/Desktop/correct/threadpool"/>
-					<Add directory="/home/huangbenson/Desktop/correct/log"/>
-					<Add directory="/home/huangbenson/Desktop/correct/CGImysql"/>
-					<Add directory="/home/huangbenson/Desktop/correct/http"/>
-					<Add directory="/home/huangbenson/Desktop/correct/lock"/>
-					<Add directory="/home/huangbenson/Desktop/correct/timer"/>
-					<Add directory="/usr/include/c++/5"/>
-					<Add directory="/usr/include/x86_64-linux-gnu/c++/5"/>
-					<Add directory="/usr/include/c++/5/backward"/>
-					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include"/>
-					<Add directory="/usr/local/include"/>
-					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed"/>
-					<Add directory="/usr/include/x86_64-linux-gnu"/>
-					<Add directory="/usr/include"/>
-				</Compiler>
-				<MakeCommands>
-					<Build command="/usr/bin/make -f &quot;/home/huangbenson/Desktop/correct/cmake-build-debug/Makefile&quot;  VERBOSE=1 LinuxServer/fast"/>
-					<CompileFile command="/usr/bin/make -f &quot;/home/huangbenson/Desktop/correct/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -f &quot;/home/huangbenson/Desktop/correct/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -f &quot;/home/huangbenson/Desktop/correct/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="edit_cache">
-				<Option working_dir="/home/huangbenson/Desktop/correct/cmake-build-debug"/>
+				<Option working_dir="/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="/usr/bin/make -f &quot;/home/huangbenson/Desktop/correct/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
-					<CompileFile command="/usr/bin/make -f &quot;/home/huangbenson/Desktop/correct/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -f &quot;/home/huangbenson/Desktop/correct/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -f &quot;/home/huangbenson/Desktop/correct/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="LinuxServer">
+				<Option output="/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/LinuxServer" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/Users/huangbenson/Work/self/LinuxImageServer/."/>
+					<Add directory="/Users/huangbenson/Work/self/LinuxImageServer/threadpool"/>
+					<Add directory="/Users/huangbenson/Work/self/LinuxImageServer/log"/>
+					<Add directory="/Users/huangbenson/Work/self/LinuxImageServer/CGImysql"/>
+					<Add directory="/Users/huangbenson/Work/self/LinuxImageServer/http"/>
+					<Add directory="/Users/huangbenson/Work/self/LinuxImageServer/lock"/>
+					<Add directory="/Users/huangbenson/Work/self/LinuxImageServer/timer"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/11.0.3/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/Makefile&quot;  VERBOSE=1 LinuxServer"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="LinuxServer/fast">
+				<Option output="/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/LinuxServer" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/Users/huangbenson/Work/self/LinuxImageServer/."/>
+					<Add directory="/Users/huangbenson/Work/self/LinuxImageServer/threadpool"/>
+					<Add directory="/Users/huangbenson/Work/self/LinuxImageServer/log"/>
+					<Add directory="/Users/huangbenson/Work/self/LinuxImageServer/CGImysql"/>
+					<Add directory="/Users/huangbenson/Work/self/LinuxImageServer/http"/>
+					<Add directory="/Users/huangbenson/Work/self/LinuxImageServer/lock"/>
+					<Add directory="/Users/huangbenson/Work/self/LinuxImageServer/timer"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/11.0.3/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/Makefile&quot;  VERBOSE=1 LinuxServer/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="/home/huangbenson/Desktop/correct/CGImysql/sql_connection_pool.cpp">
+		<Unit filename="/Users/huangbenson/Work/self/LinuxImageServer/CGImysql/sql_connection_pool.cpp">
 			<Option target="LinuxServer"/>
 		</Unit>
-		<Unit filename="/home/huangbenson/Desktop/correct/CGImysql/sql_connection_pool.h">
+		<Unit filename="/Users/huangbenson/Work/self/LinuxImageServer/CGImysql/sql_connection_pool.h">
 			<Option target="LinuxServer"/>
 		</Unit>
-		<Unit filename="/home/huangbenson/Desktop/correct/http/http_conn.cpp">
+		<Unit filename="/Users/huangbenson/Work/self/LinuxImageServer/http/http_conn.cpp">
 			<Option target="LinuxServer"/>
 		</Unit>
-		<Unit filename="/home/huangbenson/Desktop/correct/http/http_conn.h">
+		<Unit filename="/Users/huangbenson/Work/self/LinuxImageServer/http/http_conn.h">
 			<Option target="LinuxServer"/>
 		</Unit>
-		<Unit filename="/home/huangbenson/Desktop/correct/lock/locker.cpp">
+		<Unit filename="/Users/huangbenson/Work/self/LinuxImageServer/lock/locker.cpp">
 			<Option target="LinuxServer"/>
 		</Unit>
-		<Unit filename="/home/huangbenson/Desktop/correct/lock/locker.h">
+		<Unit filename="/Users/huangbenson/Work/self/LinuxImageServer/lock/locker.h">
 			<Option target="LinuxServer"/>
 		</Unit>
-		<Unit filename="/home/huangbenson/Desktop/correct/log/block_queue.h">
+		<Unit filename="/Users/huangbenson/Work/self/LinuxImageServer/log/block_queue.h">
 			<Option target="LinuxServer"/>
 		</Unit>
-		<Unit filename="/home/huangbenson/Desktop/correct/log/log.cpp">
+		<Unit filename="/Users/huangbenson/Work/self/LinuxImageServer/log/log.cpp">
 			<Option target="LinuxServer"/>
 		</Unit>
-		<Unit filename="/home/huangbenson/Desktop/correct/log/log.h">
+		<Unit filename="/Users/huangbenson/Work/self/LinuxImageServer/log/log.h">
 			<Option target="LinuxServer"/>
 		</Unit>
-		<Unit filename="/home/huangbenson/Desktop/correct/main2.cpp">
+		<Unit filename="/Users/huangbenson/Work/self/LinuxImageServer/main2.cpp">
 			<Option target="LinuxServer"/>
 		</Unit>
-		<Unit filename="/home/huangbenson/Desktop/correct/threadpool/threadpool.h">
+		<Unit filename="/Users/huangbenson/Work/self/LinuxImageServer/threadpool/threadpool.h">
 			<Option target="LinuxServer"/>
 		</Unit>
-		<Unit filename="/home/huangbenson/Desktop/correct/timer/lst_timer.cpp">
+		<Unit filename="/Users/huangbenson/Work/self/LinuxImageServer/timer/lst_timer.cpp">
 			<Option target="LinuxServer"/>
 		</Unit>
-		<Unit filename="/home/huangbenson/Desktop/correct/timer/lst_timer.h">
+		<Unit filename="/Users/huangbenson/Work/self/LinuxImageServer/timer/lst_timer.h">
 			<Option target="LinuxServer"/>
 		</Unit>
-		<Unit filename="/home/huangbenson/Desktop/correct/CMakeLists.txt">
+		<Unit filename="/Users/huangbenson/Work/self/LinuxImageServer/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>
 	</Project>

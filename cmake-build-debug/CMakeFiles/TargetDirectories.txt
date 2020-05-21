@@ -1,3 +1,8 @@
-/home/huangbenson/Desktop/correct/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/huangbenson/Desktop/correct/cmake-build-debug/CMakeFiles/LinuxServer.dir
-/home/huangbenson/Desktop/correct/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/src/CMakeFiles/rebuild_cache.dir
+/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/src/CMakeFiles/edit_cache.dir
+/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/src/CMakeFiles/liso.dir
+/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/test/CMakeFiles/rebuild_cache.dir
+/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/test/CMakeFiles/edit_cache.dir
+/Users/huangbenson/Work/self/LinuxImageServer/cmake-build-debug/test/CMakeFiles/gtest.dir
