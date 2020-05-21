@@ -17,6 +17,8 @@ Featuring epoll, threadpools, CGI & SSL.
 
 - [x] Checkpoint 4 - Multi-thread support
 
-- [ ] Checkpoint 5 - SSL support 
+- [x] Checkpoint 5 - SSL support 
+
+- [ ] Checkpoint 5.5 - add tests
 
 
