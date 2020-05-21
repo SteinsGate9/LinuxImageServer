@@ -2,6 +2,7 @@
 ## Intro
 Following instructions from CMU 15-641 FALL 2019. Built a Linux server supports HTTP/1.1 from RFC2616. 
 Featuring epoll, threadpools, CGI & SSL.
+
 ## Projects
 
 - [x] Checkpoint 1 - epoll echo server

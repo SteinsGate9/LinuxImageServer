@@ -5,6 +5,7 @@
 #include "log.h"
 #include "define.h"
 #include "common.h"
+#include "ssl.h"
 
 
 /********************************************
@@ -37,7 +38,7 @@ map<string, string> HttpHandler::users;
 /********************************************
  * public
 ********************************************/
-void HttpHandler::init(int sockfd, const sockaddr_in &addr, Timer* timer){
+void HttpHandler::init(int sockfd, const sockaddr_in &addr, Timer* timer, CLIENT_TYPE type, SSL* content){
     /* sockfd */
     add_fd(m_epollfd, sockfd, true, false);
     m_sockfd = sockfd;
@@ -48,6 +49,8 @@ void HttpHandler::init(int sockfd, const sockaddr_in &addr, Timer* timer){
     /* other */
     m_address = addr;
     m_timer = timer;
+    m_type = type;
+    m_sslcontent = content;
     init_();
 }
 
@@ -59,6 +62,12 @@ void HttpHandler::close(bool real_close){
 
         /* count */
         m_user_count--;
+
+        /* other */
+        m_type = CLIENT_TYPE::INVALID_CLIENT;
+        if (m_type== CLIENT_TYPE::HTTPS_CLIENT && m_sslcontent != nullptr)
+            SSL_free(m_sslcontent);
+        m_sslcontent = nullptr;
     }
 }
 
@@ -71,73 +80,43 @@ void HttpHandler::process() {
 
     /* parse the request */
     HTTP_STATE ret = parse_();
+#ifdef DEBUG_VERBOSE
+    if (ret == ERROR_FORMAT){
+        CONSOLE_LOG_WARN("parsing failed");
+    }
+#endif
 
     /* write to */
     write_(ret);
 
-
-#ifdef DEBUG_VERBOSE
-//    CONSOLE_LOG_INFO("%ld get: %ld", this_thread::get_id(), strlen(m_read_buf));
-//    CONSOLE_LOG_INFO("get messsage: %s with size %ld", read_buf, strlen(correct));
-//
-//    if (strcasecmp(correct2, m_read_buf) != 0 ) {
-//        strcpy(m_read_buf, "HTTP/1.1 400 Bad Request\r\n");
-//    }
-//    else{
-//    }
-//    send(m_sockfd, m_read_buf, strlen(m_read_buf), 0);
-//
-//    CONSOLE_LOG_INFO("%ld send: %ld", this_thread::get_id(), strlen(m_read_buf));
-#endif
 }
 #endif
 #ifndef DEBUG
 void HttpHandler::process()
 {
-    HTTP_CODE read_ret = process_read();
-    if (read_ret == NO_REQUEST)
-    {
-        mod_fd(m_epollfd, m_sockfd, EPOLLIN);
-        return;
-    }
-    bool write_ret = process_write(read_ret);
-    if (!write_ret)
-    {
-        close();
-    }
-    mod_fd(m_epollfd, m_sockfd, EPOLLOUT);
+
+    CONSOLE_LOG_ERROR("GG");
 }
 #endif
 
 #ifdef SYNSQL
 void HttpHandler::initmysql_result(){
-    //先从连接池中取一个连接
+    /* get connection */
     auto connPool = connectionPool::get_instance("localhost", "root", "123456", "yourdb", 3306, 8);
-
     MYSQL *mysql = connPool->get_connection();
 
-    //在user表中检索username，passwd数据，浏览器端输入
+    /* check mysql */
     if (mysql_query(mysql, "SELECT username,passwd FROM user")){
-        LOG_ERROR("SELECT error:%s\n", mysql_error(mysql));
         CONSOLE_LOG_ERROR("SELECT error:%s\n", mysql_error(mysql));
     }
-
-    //从表中检索完整的结果集
     MYSQL_RES *result = mysql_store_result(mysql);
-
-    //返回结果集中的列数
-//    int num_fields = mysql_num_fields(result);
-
-    //返回所有字段结构的数组
-//    MYSQL_FIELD *fields = mysql_fetch_fields(result);
-
-    //从结果集中获取下一行，将对应的用户名和密码，存入map中
     while (MYSQL_ROW row = mysql_fetch_row(result)) {
         string temp1(row[0]);
         string temp2(row[1]);
         users[temp1] = temp2;
     }
-    //将连接归还连接池
+
+    /* free */
     connPool->release_connection(mysql);
 }
 #endif
@@ -205,6 +184,9 @@ void HttpHandler::init_()
 ********************************************/
 void HttpHandler::read_() {
     if (m_read_idx >= READ_BUFFER_SIZE) {
+#ifdef DEBUG_VERBOSE
+        CONSOLE_LOG_WARN("read buffer over flow address: %s", inet_ntoa(m_address.sin_addr));
+#endif
         LOG_ERROR("read buffer over flow address: %s", inet_ntoa(m_address.sin_addr));
         close();
         return;
@@ -212,19 +194,30 @@ void HttpHandler::read_() {
     int bytes_read = 0;
     int tried_times = 10;
     while (true) {
-        bytes_read = recv(m_sockfd, m_read_buf + m_read_idx, READ_BUFFER_SIZE - m_read_idx, 0);
+        if (m_type == CLIENT_TYPE::HTTP_CLIENT){
+            bytes_read = recv(m_sockfd, m_read_buf + m_read_idx, READ_BUFFER_SIZE - m_read_idx, 0);
+        }
+        else {
+            bytes_read = SSL_read(m_sslcontent, m_read_buf + m_read_idx, READ_BUFFER_SIZE - m_read_idx);
+        }
         if (bytes_read == -1) {
             if (errno == EAGAIN || errno == EWOULDBLOCK){  /* no data available */
                 if (--tried_times == 0)
                     break;
             }
             else {/* other error */
+#ifdef DEBUG_VERBOSE
+                CONSOLE_LOG_WARN("read request failed address: %s", inet_ntoa(m_address.sin_addr));
+#endif
                 LOG_ERROR("read request failed address: %s", inet_ntoa(m_address.sin_addr));
                 close();
                 return;
             }
         }
         else if (bytes_read == 0) { /* already shut down */
+#ifdef DEBUG_VERBOSE
+            CONSOLE_LOG_WARN("connection shut down address: %s", inet_ntoa(m_address.sin_addr));
+#endif
             LOG_ERROR("connection shut down address: %s", inet_ntoa(m_address.sin_addr));
             close();
             return;
@@ -244,6 +237,7 @@ HttpHandler::HTTP_STATE HttpHandler::parse_(){
     while ((m_check_state == CHECK_STATE_CONTENT && line_status == LINE_OK) || ((line_status = parse_line_()) == LINE_OK)){
         text = get_line();
         m_start_line = m_checked_idx;
+        LOG_INFO("get line: [%s]", text);
 
         switch (m_check_state) {
             /* possible outputs =>
@@ -454,6 +448,9 @@ HttpHandler::HTTP_STATE HttpHandler::parse_headers_(char *text){
         m_language = text;
     }
     else {
+#ifdef DEBUG_VERBOSE
+        CONSOLE_LOG_WARN("oop!unknow header: %s", text);
+#endif
         LOG_INFO("oop!unknow header: %s", text);
     }
     text = strpbrk(text, " \t");
@@ -768,8 +765,11 @@ HttpHandler::HTTP_STATE HttpHandler::do_request_(){
 ********************************************/
 void HttpHandler::write_(HttpHandler::HTTP_STATE ret){
     if (!write_to_buffer_(ret)){
-        LOG_ERROR("buffer over flow for address %s", inet_ntoa(m_address.sin_addr));
         close();
+#ifdef DEBUG_VERBOSE
+        CONSOLE_LOG_WARN("buffer over flow for address %s", inet_ntoa(m_address.sin_addr));
+#endif
+        LOG_ERROR("buffer over flow for address %s", inet_ntoa(m_address.sin_addr));
         return;
     }
     write_to_fd_();
@@ -799,9 +799,9 @@ bool HttpHandler::write_to_buffer_(HttpHandler::HTTP_STATE ret){ /* TODO: possib
             break;
         }
         case ERROR_FILENOTFOUND:{
-            add_status_(403, error_403_title);
-            add_headers_(strlen(error_403_form));
-            if (!add_content_(error_403_form))
+            add_status_(404, error_404_title);
+            add_headers_(strlen(error_404_form));
+            if (!add_content_(error_404_form))
                 return false;
             break;
         }
@@ -882,13 +882,17 @@ bool HttpHandler::add_content_type_()
     return add_response_("Content-Type:%s\r\n", "text/html");
 }
 
-bool HttpHandler::write_to_fd_(){
+void HttpHandler::write_to_fd_(){
     int temp = 0;
     int newadd = 0;
 
     while (true){
         /* write back */
-        temp = writev(m_sockfd, m_iv, m_iv_count);
+        if (m_type == CLIENT_TYPE::HTTP_CLIENT)
+            temp = writev(m_sockfd, m_iv, m_iv_count);
+        else
+            temp = SSL_writev(m_sslcontent, m_iv, m_iv_count);
+
         if (temp > 0){ /* if succeeded*/
             /* updates */
             bytes_have_send += temp;
@@ -900,13 +904,19 @@ bool HttpHandler::write_to_fd_(){
                 unmap();
                 if (m_linger){
                     init_();
-                    LOG_INFO("sent all data:%d and linger", bytes_have_send);
-                    return true;
+#ifdef DEBUG_VERBOSE
+                    CONSOLE_LOG_INFO("sent all data:%d and linger with address %s", bytes_have_send, inet_ntoa(m_address.sin_addr));
+#endif
+                    LOG_INFO("sent all data:%d and linger with address %s", bytes_have_send, inet_ntoa(m_address.sin_addr));
+                    return;
                 }
                 else {
                     close();
+#ifdef DEBUG_VERBOSE
+                    CONSOLE_LOG_INFO("sent all data:%d and closed %s", bytes_have_send, inet_ntoa(m_address.sin_addr));
+#endif
                     LOG_INFO("sent all data:%d and closed %s", bytes_have_send, inet_ntoa(m_address.sin_addr));
-                    return false;
+                    return;
                 }
             }
         }
@@ -922,10 +932,13 @@ bool HttpHandler::write_to_fd_(){
                     m_iv[0].iov_len = m_iv[0].iov_len - bytes_have_send;
                 }
             }
-            else { /* other error */
+            else { /* other error: mostly connection closed error because of timer */
                 close();
+#ifdef DEBUG_VERBOSE
+                CONSOLE_LOG_WARN("error [%s] occurred for address %s", strerror(errno), inet_ntoa(m_address.sin_addr));
+#endif
                 LOG_INFO("error [%s] occurred for address %s", strerror(errno), inet_ntoa(m_address.sin_addr));
-                return false;
+                return;
             }
         }
     }

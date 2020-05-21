@@ -85,7 +85,9 @@ void remove_fd(int epollfd, int fd)
     if (epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, 0) < 0){
         CONSOLE_LOG_ERROR("epoll_ctl error: %s", strerror(errno));
     }
-    close(fd);
+    if (close(fd) <= 1){
+        CONSOLE_LOG_ERROR("close error: %s", strerror(errno));
+    }
 }
 
 

@@ -25,7 +25,9 @@ public:
         socklen_t client_addrlength = sizeof(client_address);
         int connfd; /* try tcp */
         if ((connfd = accept(listenfd, (struct sockaddr *) &client_address, &client_addrlength)) < 0) {
+#ifdef DEBUG_VERBOSE
             CONSOLE_LOG_WARN("%s", "epoll failure");
+#endif
             LOG_ERROR("%s:errno is:%d", "accept error", errno);
         }
         m_lock.unlock();
@@ -54,7 +56,7 @@ public:
         timer_lst->add_timer(timer); // add TIMER to TIMERLIST
 
         /* add to thread pool */
-        users[connfd].init(connfd, client_address, timer); // init HTTPCON
+        users[connfd].init(connfd, client_address, timer, CLIENT_TYPE::HTTP_CLIENT, nullptr); // init HTTPCON
         m_lock.unlock();
     };
 

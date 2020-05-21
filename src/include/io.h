@@ -25,6 +25,7 @@
 #include <cassert>
 #include <sys/epoll.h>
 #include <string.h>
+#include <openssl/ssl.h>
 
 #include "logger.h"
 
@@ -39,6 +40,7 @@
 ********************************************/
 int open_listenfd(int port);
 void *get_in_addr(sockaddr *sa);
+int open_ssl_socket(int port, SSL_CTX* ssl_context);
 
 
 /********************************************

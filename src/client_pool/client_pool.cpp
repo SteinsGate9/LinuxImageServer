@@ -6,6 +6,7 @@
 #include "client_pool.h"
 
 
+
 /********************************************
  * static
 ********************************************/
@@ -17,49 +18,34 @@ int ClientPool::alarmfd[];
  * functions
 ********************************************/
 /* Initialize client pool */
-ClientPool::ClientPool(int port)
-: httppool_(new ProcessThreadPool<HttpHandler>()),
-//  connpool_(new ProcessThreadPool<ConnectHandler>()),
-  server_state(ServerState::RUNNING){
+ClientPool::ClientPool(int port, int ssl_port, char* PRIVATEKEY_FILENAME, char* CERT_FILENAME)
+: server_state(ServerState::RUNNING),
+httppool_(new ProcessThreadPool<HttpHandler>()){
     /* epoll event */
     if((epollfd_ = epoll_create(5)) == -1) {
-        LOG_ERROR("%s", "open epoll failed");
-#ifdef DEBUG_VERBOSE
         CONSOLE_LOG_ERROR("epoll create failed");
-#endif
     }
     memset(events_, '\0', sizeof(events_));
 
+    /* SSL initialization */
+    ssl_context_ = ssl_init(PRIVATEKEY_FILENAME, CERT_FILENAME);
+    ssl_fd_ = open_ssl_socket(ssl_port, ssl_context_);
+    add_fd(epollfd_, ssl_fd_, false, true);
+
     /* init listen socket */
-    if ((listenfd_ = open_listenfd(port)) == -1) {
-        LOG_ERROR("%s", "open listenfd failed");
-#ifdef DEBUG_VERBOSE
-        CONSOLE_LOG_ERROR("open listenfd failed");
-#endif
-    }
-    /* add to epoll */
+    listenfd_ = open_listenfd(port);
     add_fd(epollfd_, listenfd_, false, true);
 
-    /* create signal pipe */
-    int ret; /* pipefd are fds for 2 sockets fd[1] for sending, fd[0] for receiving. */
-    if((ret = socketpair(PF_UNIX, SOCK_STREAM, 0, alarmfd)) == -1) {
-        LOG_ERROR("%s", "create pipe failed");
-#ifdef DEBUG_VERBOSE
+    /* create signal pipe pipefd are fds for 2 sockets fd[1] for sending, fd[0] for receiving. */
+    if((socketpair(PF_UNIX, SOCK_STREAM, 0, alarmfd)) == -1) {
         CONSOLE_LOG_ERROR("create pipe failed");
-#endif
     }
     set_fl(alarmfd[1], O_NONBLOCK);
-    /* add to epoll */
     add_fd(epollfd_, alarmfd[0], false, false);
-    /* create signal pipe */
-    if((ret = socketpair(PF_UNIX, SOCK_STREAM, 0, intfd)) == -1) {
-        LOG_ERROR("%s", "create pipe failed");
-#ifdef DEBUG_VERBOSE
+    if((socketpair(PF_UNIX, SOCK_STREAM, 0, intfd)) == -1) {
         CONSOLE_LOG_ERROR("create pipe failed");
-#endif
     }
     set_fl(intfd[1], O_NONBLOCK);
-    /* add to epoll */
     add_fd(epollfd_, intfd[0], false, false);
 
     /* register sighandler */
@@ -72,15 +58,16 @@ ClientPool::ClientPool(int port)
 
     /* init http handler */
     HttpHandler::m_epollfd = epollfd_;
+
+    /* log */
+    CONSOLE_LOG_INFO("-----[LISO] start-----");
+    LOG_INFO("%s", "-----[LISO] start-----");
 }
 
 
 
 
 void ClientPool::testing_(){
-    bool timeout = false;
-    CONSOLE_LOG_INFO("start server");
-
     while (server_state == ServerState::RUNNING) {
 #ifdef DEBUG_VERBOSE
         fprintf(stdout, "\n");
@@ -102,9 +89,6 @@ void ClientPool::testing_(){
         CONSOLE_LOG_INFO("1) epoll_wait get %d events", number);
 #endif
 
-        struct sockaddr_in client_address;
-        socklen_t client_addrlength = sizeof(client_address);
-        char remoteIP[INET6_ADDRSTRLEN];
         for (int i = 0; i < number; i++) {
 
             /* get event fd */
@@ -117,6 +101,9 @@ void ClientPool::testing_(){
             /* if from listen */
             if (sockfd == listenfd_) {
                 add_client_();
+            }
+            else if (sockfd == ssl_fd_) {
+                add_ssl_client_();
             }
             /* signal caught */
             else if (sockfd == alarmfd[0]) { /*TODO: what if timeout after read? */
@@ -300,6 +287,72 @@ void ClientPool::add_client_() {
     timer_lst_.add_timer(timer); // add TIMER to TIMERLIST
 
     /* add to thread pool */
-    users_[connfd].init(connfd, client_address, timer); // init HTTPCON
-};
+    users_[connfd].init(connfd, client_address, timer, CLIENT_TYPE::HTTP_CLIENT, nullptr); // init HTTPCON
+}
+
+void ClientPool::add_ssl_client_() {
+    /* build TCP */
+    struct sockaddr_in client_address;
+    socklen_t client_addrlength = sizeof(client_address);
+    int connfd; /* try tcp */
+    if ((connfd = accept(ssl_fd_, (struct sockaddr *) &client_address, &client_addrlength)) < 0) {
+#ifdef DEBUG_VERBOSE
+        CONSOLE_LOG_WARN("%s", "accept failure");
+#endif
+        LOG_ERROR("%s:errno is:%d", "accept error", errno);
+        return;
+    }
+
+    /* wrap socket with ssl */
+    SSL *client_context;
+    if ((client_context = SSL_new(ssl_context_)) == NULL) {
+        close(ssl_fd_);
+        SSL_CTX_free(ssl_context_);
+        LOG_ERROR("%s", "[SSL error] Error creating client SSL context");
+        return;
+    }
+    if (SSL_set_fd(client_context, connfd) == 0) {
+        close(ssl_fd_);
+        SSL_free(client_context);
+        SSL_CTX_free(ssl_context_);
+        LOG_ERROR("%s", "[SSL error] Error creating client SSL context in SSL_set_fd");
+        return;
+    }
+    int rv;
+    if ((rv = SSL_accept(client_context)) <= 0) {
+        close(ssl_fd_);
+        SSL_free(client_context);
+        SSL_CTX_free(ssl_context_);
+        LOG_ERROR("[SSL error] Error accepting (handshake) client SSL contenxt) %s", ERR_error_string(SSL_get_error(client_context, rv), NULL));
+        return;
+    }
+
+    /* get address */
+#ifdef DEBUG_VERBOSE
+    char remoteIP[INET6_ADDRSTRLEN];
+    char *remote_addr = (char *) inet_ntop(client_address.sin_family,
+                                           get_in_addr((sockaddr *) &client_address), remoteIP,
+                                           INET6_ADDRSTRLEN);
+    CONSOLE_LOG_INFO("address: %s", remote_addr);
+#endif
+
+    /* if too much */
+    if (HttpHandler::m_user_count == MAX_FD_){ // undealt HTTP >= 65532
+        send(connfd, "Internal server busy\r\n", strlen("Internal server busy\r\n"), 0);
+        close(connfd);
+#ifdef DEBUG_VERBOSE
+        CONSOLE_LOG_WARN("ERROR: Internal server busy");
+#endif
+        LOG_ERROR("ERROR: Internal server busy: %s", errno);
+        return;
+    }
+
+
+    /* add to time list */
+    Timer *timer = new Timer(connfd, client_address, &users_[connfd], time(NULL)+3*TIMESLOT);
+    timer_lst_.add_timer(timer); // add TIMER to TIMERLIST
+
+    /* add to thread pool */
+    users_[connfd].init(connfd, client_address, timer, CLIENT_TYPE::HTTPS_CLIENT, client_context); // init HTTPCON
+}
 

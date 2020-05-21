@@ -13,13 +13,14 @@
 #include "threadpool.h"
 #include "define.h"
 #include "connector.h"
+#include "ssl.h"
 
 
 /********************************************
  * defines
 ********************************************/
 #define MAX_FD 30000           //最大文件描述符
-#define MAX_SIG 10           //最大文件描述符
+#define MAX_SIG 10             //最大文件描述符
 #define MAX_EVENT_NUMBER 10000 //最大事件数
 #define TIMESLOT 5             //最小超时单位
 
@@ -27,33 +28,19 @@
 /********************************************
  * types
 ********************************************/
-enum class client_state {
-    INVALID,
-    READY_FOR_READ,
-    READY_FOR_WRITE,
-    WAITING_FOR_CGI,
-    CGI_FOR_READ,
-    CGI_FOR_WRITE
-};
-
-enum class client_type {
-    INVALID_CLIENT,
-    HTTP_CLIENT,
-    HTTPS_CLIENT
-};
-
 enum class ServerState {
     STOPPED,
     RUNNING,
     SLEEPING
 } ;
 
+
 /********************************************
  * class
 ********************************************/
 class ClientPool{
 public:
-    explicit ClientPool(int);
+    explicit ClientPool(int, int, char*, char*);
     ~ClientPool(){
         close(epollfd_);
         close(listenfd_);
@@ -89,6 +76,7 @@ private:
 
     /* add to client */
     void add_client_();
+    void add_ssl_client_();
 
 public:
     /* server state */
@@ -97,24 +85,26 @@ public:
 private:
     /* epoll related */
     int epollfd_;
-    int listenfd_;
     epoll_event events_[MAX_EVENT_NUMBER]; // events for storing
+
+    /* normal related */
+    int listenfd_;
+
+    /* ssl related */
+    int ssl_fd_;
+    SSL_CTX *ssl_context_;
 
     /* http thread pools related */
     SortedTimerList timer_lst_; /* control the process of pool. */
     HttpHandler users_[MAX_FD]; /* all possible users */
     ProcessThreadPool<HttpHandler> *httppool_; /* continously append user to pool */
 
-    /* connector thread pools related */
-//    ConnectHandler connectors_[MAX_FD];
-//    ProcessThreadPool<ConnectHandler> *connpool_;
-
     /* signal handler pools related */
     static int alarmfd[2]; /*  pipe for signal */
     static int intfd[2];
 
     /* SSL related */
-    client_type type[FD_SETSIZE];                 /* client's type: HTTP or HTTPS */
+//    client_type type[FD_SETSIZE];                 /* client's type: HTTP or HTTPS */
 //    SSL * context[FD_SETSIZE];                    /* set if client's type is HTTPS */
 
     /* CGI related */

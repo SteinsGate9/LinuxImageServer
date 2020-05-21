@@ -30,7 +30,7 @@ namespace test_server {
 
         /* test */
         LOG_INFO("%s", "start server");
-        auto p = new ClientPool(1234);
+        auto p = new ClientPool(1234, 1235, __SSLKEY__, __SSLCERT__);
         p->testing_();
 
     }

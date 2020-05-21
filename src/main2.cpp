@@ -29,6 +29,7 @@
 int main(int argc, char *argv[]){
     /* port */
     int port = 1234;
+    int sslport = 1235;
     if (argc == 2)
         port = strtol(argv[1], nullptr, 10);
 
@@ -49,12 +50,11 @@ int main(int argc, char *argv[]){
 #endif
 
     /* client pool */
-    auto *clientpool = new ClientPool(port);
+//    auto *clientpool = new ClientPool(port, sslport, __, "");
 
     /* start */
-    CONSOLE_LOG_INFO("-----[LISO] start-----");
-    LOG_INFO("%s", "-----[LISO] start-----");
-    clientpool->handle_events();
+
+//    clientpool->handle_events();
 
 
 

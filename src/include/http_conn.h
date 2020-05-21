@@ -20,19 +20,42 @@
 #include <sys/wait.h>
 #include <sys/uio.h>
 #include <map>
+#include <openssl/ssl.h>
 
 #include "locker.h"
 #include "sql_connection_pool.h"
 #include "lst_timer.h"
 
-
-
+/********************************************
+ * extern
+********************************************/
 extern const char correct[1000];
 extern char correct2[1000];
 
+
+/********************************************
+ * define
+********************************************/
 #define TIMESLOT_ 5
+enum class ClientState {
+    INVALID,
+    READY_FOR_READ,
+    READY_FOR_WRITE,
+    WAITING_FOR_CGI,
+    CGI_FOR_READ,
+    CGI_FOR_WRITE
+};
+
+enum class CLIENT_TYPE {
+    INVALID_CLIENT,
+    HTTP_CLIENT,
+    HTTPS_CLIENT
+};
 
 
+/********************************************
+ * class
+********************************************/
 class HttpHandler
 {
     friend Timer;
@@ -86,7 +109,7 @@ public:
 
 public:
     /* socket related */
-    void init(int sockfd, const sockaddr_in &addr, Timer* timer); /* init with fd & stuff */
+    void init(int sockfd, const sockaddr_in &addr, Timer* timer, CLIENT_TYPE, SSL*); /* init with fd & stuff */
     void close(bool real_close = true); /* deal with close */
     void process(); /* worker function */
 
@@ -151,7 +174,7 @@ private:
     /* write related */
     void write_(HTTP_STATE); /* write HTTP respond function needed */
     bool write_to_buffer_(HTTP_STATE);
-    bool write_to_fd_();
+    void write_to_fd_();
     bool add_response_(const char *format, ...);
     /* status */
     bool add_status_(int status, const char *title); /* HTTP/1.1 500 InternalError/... crlf */
@@ -189,6 +212,8 @@ private:
     /* from outside */
     int m_sockfd;
     sockaddr_in m_address;
+    CLIENT_TYPE m_type;
+    SSL* m_sslcontent;
 
     /* read related */
     char m_read_buf[READ_BUFFER_SIZE];
